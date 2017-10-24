@@ -1101,23 +1101,19 @@ CREATE VIEW `v_rm_docker_service_port` AS select `rm_docker_port`.`id` AS `port_
 -- ----------------------------
 -- Procedure structure for DEL_RM_DOCKER_COLL
 -- ----------------------------
-DROP PROCEDURE IF EXISTS `DEL_RM_DOCKER_COLL`;
-DELIMITER ;;
+
 CREATE  PROCEDURE `DEL_RM_DOCKER_COLL`()
     COMMENT '定时删除 rm_docker_coll 表数据'
 BEGIN
 
 	DELETE FROM rm_docker_coll WHERE coll_time < DATE_SUB(NOW(), INTERVAL 1 DAY);
 
-END
-;;
-DELIMITER ;
+END;
+
 
 -- ----------------------------
 -- Procedure structure for DEL_TB_KUBE_PERF
 -- ----------------------------
-DROP PROCEDURE IF EXISTS `DEL_TB_KUBE_PERF`;
-DELIMITER ;;
 CREATE  PROCEDURE `DEL_TB_KUBE_PERF`()
 BEGIN
 
@@ -1129,24 +1125,16 @@ DELETE FROM TB_KUBE_PERF_DOCK_CPUMEM WHERE INSERT_TIME < DATE_SUB(NOW(), INTERVA
 DELETE FROM TB_KUBE_PERF_DOCK_FILESYSTEM WHERE INSERT_TIME < DATE_SUB(NOW(), INTERVAL 1 DAY);
 DELETE FROM TB_KUBE_PERF_DOCK_NETWORK_INTERFACE WHERE INSERT_TIME < DATE_SUB(NOW(), INTERVAL 1 DAY);
 
-END
-;;
-DELIMITER ;
+END;
 
 -- ----------------------------
 -- Event structure for job_del_rm_docker_coll
 -- ----------------------------
-DROP EVENT IF EXISTS `job_del_rm_docker_coll`;
-DELIMITER ;;
-CREATE  EVENT `job_del_rm_docker_coll` ON SCHEDULE EVERY 6 HOUR STARTS '2016-06-06 15:00:49' ON COMPLETION NOT PRESERVE ENABLE DO CALL DEL_RM_DOCKER_COLL()
-;;
-DELIMITER ;
+
+CREATE  EVENT `job_del_rm_docker_coll` ON SCHEDULE EVERY 6 HOUR STARTS '2016-06-06 15:00:49' ON COMPLETION NOT PRESERVE ENABLE DO CALL DEL_RM_DOCKER_COLL();
 
 -- ----------------------------
 -- Event structure for job_del_tb_kube_perf
 -- ----------------------------
-DROP EVENT IF EXISTS `job_del_tb_kube_perf`;
-DELIMITER ;;
-CREATE  EVENT `job_del_tb_kube_perf` ON SCHEDULE EVERY 8 HOUR STARTS '2016-06-06 15:00:49' ON COMPLETION PRESERVE ENABLE DO CALL DEL_TB_KUBE_PERF()
-;;
-DELIMITER ;
+CREATE  EVENT `job_del_tb_kube_perf` ON SCHEDULE EVERY 8 HOUR STARTS '2016-06-06 15:00:49' ON COMPLETION PRESERVE ENABLE DO CALL DEL_TB_KUBE_PERF();
+
