@@ -35,7 +35,7 @@ if [ ! -d '/var/lib/mysql/mysql' -a "${1%_safe}" = 'mysqld' ]; then
 	fi
 	
 	echo 'FLUSH PRIVILEGES ;' >> "$TEMP_FILE"
-	cat /tmp/r.sql >> "$TEMP_FILE"
+	cat /tmp/rm_docker.sql >> "$TEMP_FILE"
 	
 	set -- "$@" --init-file="$TEMP_FILE"
 fi
