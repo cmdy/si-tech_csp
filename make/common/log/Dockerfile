@@ -1,4 +1,4 @@
-FROM vmware/rsyslog-photon:8.15.0
+FROM cmdy/rsyslog:v1.3.0
 MAINTAINER  zhanglin_csd@si-tech.com.cn
 ADD ./rsyslog.conf /etc/rsyslog.conf
 
@@ -11,6 +11,6 @@ ADD ./rsyslog_docker.conf /etc/rsyslog.d/
 
 VOLUME /var/log/docker/
 
-EXPOSE 514
+EXPOSE 516
 
 CMD crond && rm -f /var/run/rsyslogd.pid && rsyslogd -n
