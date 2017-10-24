@@ -888,7 +888,47 @@ CREATE TABLE `sys_role_func` (
   `role_id` varchar(64) NOT NULL COMMENT '角色编号',
   `func_auth_code` varchar(1024) DEFAULT NULL COMMENT '功能编号',
   `data_auth_code` varchar(1024) DEFAULT NULL COMMENT '资源权限编码',
-  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',0e54f5f367d6b69', '18902384092', 'test111@test.com', '1', NOW(), '', '', '');
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  `func_id` varchar(64) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='角色权限表';
+
+-- ----------------------------
+-- Table structure for sys_user
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_user`;
+CREATE TABLE `sys_user` (
+  `id` varchar(64) NOT NULL COMMENT '用户编号',
+  `account` varchar(255) NOT NULL COMMENT '登录帐号',
+  `password` varchar(255) NOT NULL COMMENT '密码',
+  `name` varchar(255) DEFAULT NULL COMMENT '姓名',
+  `employee_id` varchar(64) DEFAULT NULL COMMENT '员工编号',
+  `mobile` varchar(64) DEFAULT NULL COMMENT '联系电话',
+  `email` varchar(64) DEFAULT NULL COMMENT '邮箱地址',
+  `status` char(1) DEFAULT '1' COMMENT '状态:1为正常，2为删除，3为锁定，4为冻结',
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `parent_id` varchar(64) DEFAULT NULL COMMENT '父用户编号，默认-0.表示没有父用户',
+  `enable` char(1) DEFAULT '1' COMMENT '是否可用,1：是，0：否',
+  `type` varchar(64) DEFAULT NULL COMMENT '用户类型：PRE_PAYMENT:预付费用户，POST_PAYMENT：后付费用户',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户';
+
+-- ----------------------------
+-- Table structure for sys_user_role
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_user_role`;
+CREATE TABLE `sys_user_role` (
+  `user_id` varchar(64) NOT NULL COMMENT '用户编号',
+  `role_id` varchar(64) NOT NULL COMMENT '角色编号',
+  `id` varchar(64) NOT NULL COMMENT '编号',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户与角色关系表';
+
+-- ----------------------------
+--  sys_user init data
+-- ----------------------------
+
+INSERT INTO `sys_user` (`id`, `account`, `password`, `name`, `employee_id`, `mobile`, `email`, `status`, `update_time`, `parent_id`, `enable`, `type`) VALUES ('1', 'admin', '©eéÝË#G1¶!.ð}ÜBEÄ«Ò|çÕÇüº±²n,àû', '云服务中心管理员', '2410b4cafe424f79a0e54f5f367d6b69', '18902384092', 'test111@test.com', '1', NOW(), '', '', '');
 
 INSERT INTO `sys_role` (`id`, `name`, `remark`, `update_time`, `operation_type`) VALUES ('9c69ab75b21640c089d0049dc61b98ed', '系统管理员', '系统管理员', NOW(), '2');
 
@@ -972,7 +1012,7 @@ CREATE TABLE `tb_kube_perf_dock_filesystem` (
   `DEVICE` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `UUID` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
   `FSNAME` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
-  `CAPACITY` varchar(64) 
+  `CAPACITY` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   `USAGE_TOTAL` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   `FS_USAGE_PERC` decimal(3,0) DEFAULT NULL,
   `INSERT_TIME` datetime DEFAULT NULL
@@ -1110,44 +1150,3 @@ DELIMITER ;;
 CREATE  EVENT `job_del_tb_kube_perf` ON SCHEDULE EVERY 8 HOUR STARTS '2016-06-06 15:00:49' ON COMPLETION PRESERVE ENABLE DO CALL DEL_TB_KUBE_PERF()
 ;;
 DELIMITER ;
-
-  `func_id` varchar(64) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='角色权限表';
-
--- ----------------------------
--- Table structure for sys_user
--- ----------------------------
-DROP TABLE IF EXISTS `sys_user`;
-CREATE TABLE `sys_user` (
-  `id` varchar(64) NOT NULL COMMENT '用户编号',
-  `account` varchar(255) NOT NULL COMMENT '登录帐号',
-  `password` varchar(255) NOT NULL COMMENT '密码',
-  `name` varchar(255) DEFAULT NULL COMMENT '姓名',
-  `employee_id` varchar(64) DEFAULT NULL COMMENT '员工编号',
-  `mobile` varchar(64) DEFAULT NULL COMMENT '联系电话',
-  `email` varchar(64) DEFAULT NULL COMMENT '邮箱地址',
-  `status` char(1) DEFAULT '1' COMMENT '状态:1为正常，2为删除，3为锁定，4为冻结',
-  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `parent_id` varchar(64) DEFAULT NULL COMMENT '父用户编号，默认-0.表示没有父用户',
-  `enable` char(1) DEFAULT '1' COMMENT '是否可用,1：是，0：否',
-  `type` varchar(64) DEFAULT NULL COMMENT '用户类型：PRE_PAYMENT:预付费用户，POST_PAYMENT：后付费用户',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户';
-
--- ----------------------------
--- Table structure for sys_user_role
--- ----------------------------
-DROP TABLE IF EXISTS `sys_user_role`;
-CREATE TABLE `sys_user_role` (
-  `user_id` varchar(64) NOT NULL COMMENT '用户编号',
-  `role_id` varchar(64) NOT NULL COMMENT '角色编号',
-  `id` varchar(64) NOT NULL COMMENT '编号',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户与角色关系表';
-
--- ----------------------------
---  sys_user init data
--- ----------------------------
-
-INSERT INTO `sys_user` (`id`, `account`, `password`, `name`, `employee_id`, `mobile`, `email`, `status`, `update_time`, `parent_id`, `enable`, `type`) VALUES ('1', 'admin', '©eéÝË#G1¶!.ð}ÜBEÄÒ|ç
