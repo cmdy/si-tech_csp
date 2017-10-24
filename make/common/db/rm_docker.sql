@@ -1,6 +1,8 @@
 drop database if exists rm_docker;
 create database rm_docker charset = utf8;
 
+ALTER DATABASE `rm_docker` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci
+
 use rm_docker;
 
 -- ----------------------------
