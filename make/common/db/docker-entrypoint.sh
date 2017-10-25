@@ -29,6 +29,8 @@ if [ ! -d '/var/lib/mysql/mysql' -a "${1%_safe}" = 'mysqld' ]; then
 	if [ "$MYSQL_USER" -a "$MYSQL_PASSWORD" ]; then
 		echo "CREATE USER '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD' ;" >> "$TEMP_FILE"
 		
+		echo "CREATE USER '$MYSQL_USER'@'127.0.0.1' IDENTIFIED BY '$MYSQL_PASSWORD' ;" >> "$TEMP_FILE"
+		
 		if [ "$MYSQL_DATABASE" ]; then
 			echo "GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD' WITH GRANT OPTION;" >> "$TEMP_FILE"
 		fi
