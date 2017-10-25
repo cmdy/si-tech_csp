@@ -2,7 +2,7 @@ set character set utf8;
 drop database if exists rm_docker;
 create database rm_docker DEFAULT CHARACTER SET utf8;
 
-ALTER DATABASE `rm_docker` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci
+ALTER DATABASE `rm_docker` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 use rm_docker;
 
