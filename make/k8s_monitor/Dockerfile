@@ -5,4 +5,4 @@ ADD ./jdk1.8.0_91 /
 
 ADD ./k8s_monitor /
 
-RUN /k8s_monitor/bin/startMonitor.sh
+RUN ./k8s_monitor/bin/startMonitor.sh
