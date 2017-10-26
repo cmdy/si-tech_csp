@@ -7,4 +7,4 @@ COPY ./k8s_monitor /
 
 #RUN  chmod u+x  /k8s_monitor/bin/startMonitor.sh
 #CMD ["sh","/k8s_monitor/bin/startMonitor.sh"]
-CMD ["/bin/sh","./k8s_monitor/bin/startMonitor.sh"]
+CMD ["/bin/sh","/k8s_monitor/bin/startMonitor.sh"]
