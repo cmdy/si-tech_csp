@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMapConfig PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN"
+    "http://www.ibatis.com/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+
+	<settings cacheModelsEnabled="true" enhancementEnabled="true"
+		lazyLoadingEnabled="true" errorTracingEnabled="true" maxRequests="32"
+		maxSessions="10" maxTransactions="5" useStatementNamespaces="false" />
+
+	<transactionManager type="JDBC">
+		<dataSource type="SIMPLE">
+			<property value="${SERVERDriver}" name="JDBC.Driver" />
+			<property value="${SERVERConnectionURL}" name="JDBC.ConnectionURL" />
+			<property value="${SERVERUsername}" name="JDBC.Username" />
+			<property value="${SERVERPassword}" name="JDBC.Password" />
+			<property name="Pool.MaximumActiveConnections" value="10" />
+			<property name="Pool.MaximumIdleConnections" value="5" />
+			<property name="Pool.MaximumCheckoutTime" value="120000" />
+			<property name="Pool.TimeToWait" value="500" />
+			<property name="Pool.PingQuery" value="select 1 from	ACCOUNT" />
+			<property name="Pool.PingEnabled" value="false" />
+			<property name="Pool.PingConnectionsOlderThan" value="1" />
+			<property name="Pool.PingConnectionsNotUsedFor" value="1" />
+		</dataSource>
+	</transactionManager>
+
+	<sqlMap resource="com/sitech/kubernetes/maps/TbKubePerfContainersMap.xml" />
+	<sqlMap resource="com/sitech/kubernetes/maps/TbKubePerfDockersMap.xml" />
+	<sqlMap resource="com/sitech/kubernetes/maps/RmDockerNodeMap.xml" />
+        <sqlMap resource="com/sitech/kubernetes/maps/TbKubeConfContDockMap.xml" />
+
+</sqlMapConfig>
