@@ -1,4 +1,4 @@
-FROM vmware/photon:1.0
+FROM openshift/base-centos7:latest
 MAINTAINER  zhanglin_csd@si-tech.com.cn
 
 ADD ./jdk1.8.0_91 /
