@@ -930,7 +930,7 @@ CREATE TABLE `sys_user_role` (
 --  sys_user init data
 -- ----------------------------
 set character set utf8;
-INSERT INTO `sys_user` (`id`, `account`, `password`, `name`, `employee_id`, `mobile`, `email`, `status`, `update_time`, `parent_id`, `enable`, `type`) VALUES ('1', 'admin', '©eéÝË#G1¶!.ð}ÜBEÄ«Ò|çÕÇüº±²n,àû', '云服务中心管理员', '2410b4cafe424f79a0e54f5f367d6b69', '18902384092', 'test111@test.com', '1', NOW(), '', '', '');
+INSERT INTO `sys_user` (`id`, `account`, `password`, `name`, `employee_id`, `mobile`, `email`, `status`, `update_time`, `parent_id`, `enable`, `type`) VALUES ('1', 'admin', 'hAGpZendyyNHMbYhLvB93EIURcSrCNJ8GhjnBBuO1cf8uoaxshwabhgLLOD7ADyiSyeXLWeSUY+8so+gf0hTyyYxpjYGw3rJzl83AqTAkrCE1LdrcmeYfbxI7SD4oV/1Y4QqIm97s2D93sfNnJNTWc6Oww995/CYaYk5nacr/bM=', '云服务中心管理员', '2410b4cafe424f79a0e54f5f367d6b69', '18902384092', 'test111@test.com', '1', NOW(), '', '', '');
 
 INSERT INTO `sys_role` (`id`, `name`, `remark`, `update_time`, `operation_type`) VALUES ('9c69ab75b21640c089d0049dc61b98ed', '系统管理员', '系统管理员', NOW(), '2');
 
