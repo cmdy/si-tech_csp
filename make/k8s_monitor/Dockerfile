@@ -1,4 +1,4 @@
-FROM openshift/base-centos7:latest
+FROM vmware/photon:1.0
 MAINTAINER  zhanglin_csd@si-tech.com.cn
 
 COPY ./jdk1.8.0_91 /
