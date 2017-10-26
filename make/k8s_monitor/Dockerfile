@@ -1,9 +1,9 @@
 FROM openshift/base-centos7:latest
 MAINTAINER  zhanglin_csd@si-tech.com.cn
 
-ADD ./jdk1.8.0_91 /
+COPY ./jdk1.8.0_91 /
 
-ADD ./k8s_monitor /
+COPY ./k8s_monitor /
 
 RUN  chmod u+x  /k8s_monitor/bin/startMonitor.sh
 CMD ["sh","/k8s_monitor/bin/startMonitor.sh"]
