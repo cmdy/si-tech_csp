@@ -23,7 +23,9 @@ if [ ! -d '/var/lib/mysql/mysql' -a "${1%_safe}" = 'mysqld' ]; then
 	EOSQL
 	
 	if [ "$MYSQL_DATABASE" ]; then
-		echo "CREATE DATABASE IF NOT EXISTS $MYSQL_DATABASE ;" >> "$TEMP_FILE"
+	        echo "SET CHARACTER SET utf8;"
+		echo "DROP DATABASE IF EXISTS $MYSQL_DATABASE;"
+		echo "CREATE DATABASE IF NOT EXISTS $MYSQL_DATABASE DEFAULT CHARACTER SET utf8;" >> "$TEMP_FILE"
 	fi
 	
 	if [ "$MYSQL_USER" -a "$MYSQL_PASSWORD" ]; then
