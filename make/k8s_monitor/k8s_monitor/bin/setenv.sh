@@ -1,4 +1,4 @@
-JAVA_HOME=/jdk1.8.0_91
+JAVA_HOME=/usr/local/jdk1.8.0_144
 AGENT_HOME=/k8s_monitor
 LIBS_HOME=${AGENT_HOME}/lib
 PATH=${JAVA_HOME}/bin:${PATH}:/usr/sbin:/usr/bin:/etc
