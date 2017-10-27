@@ -1,4 +1,4 @@
-FROM centos:latest
+FROM photon:latest
 MAINTAINER  zhanglin_csd@si-tech.com.cn
 
 RUN mkdir /k8s_monitor
