@@ -1,10 +1,7 @@
-FROM photon:latest
+FROM  primetoninc/jdk:1.8
 MAINTAINER  zhanglin_csd@si-tech.com.cn
 
 RUN mkdir /k8s_monitor
-
-COPY ./jdk1.8.0_91/  /jdk1.8.0_91/
-RUN chmod -R +x /jdk1.8.0_91
 
 COPY ./k8s_monitor/  /k8s_monitor/
 
