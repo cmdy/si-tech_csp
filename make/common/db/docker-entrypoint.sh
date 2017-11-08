@@ -7,7 +7,6 @@ if [ ! -d '/var/lib/mysql/mysql' -a "${1%_safe}" = 'mysqld' ]; then
 		echo >&2 '  Did you forget to add -e MYSQL_ROOT_PASSWORD=... ? v2'
 		exit 1
 	fi
-	echo "lower_case_table_names = 1" >> /etc/mysql/my.cnf
 	
 	mysql_install_db --user=mysql --datadir=/var/lib/mysql
 	
@@ -42,6 +41,8 @@ if [ ! -d '/var/lib/mysql/mysql' -a "${1%_safe}" = 'mysqld' ]; then
 	
 	set -- "$@" --init-file="$TEMP_FILE"
 fi
+
+echo "lower_case_table_names = 1" >> /etc/mysql/my.cnf
 
 chown -R mysql:mysql /var/lib/mysql
 exec "$@"
