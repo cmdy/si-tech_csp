@@ -1,4 +1,4 @@
-FROM  cmdy/alpine-orcale-jdk:8u152
+FROM  cmdy/alpine-oracle-jdk:8u152
 MAINTAINER  zhanglin_csd@si-tech.com.cn
 
 RUN mkdir /k8s_monitor
