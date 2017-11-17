@@ -1,4 +1,4 @@
-JAVA_HOME=/usr/local/jdk1.8.0_144
+JAVA_HOME=/usr/local/cmdy/server-jre-8
 AGENT_HOME=/k8s_monitor
 LIBS_HOME=${AGENT_HOME}/lib
 PATH=${JAVA_HOME}/bin:${PATH}:/usr/sbin:/usr/bin:/etc
@@ -9,5 +9,5 @@ export LANG
 export JAVA_HOME
 export AGENT_HOME
 export LIBS_HOME
-export PATH
+#export PATH
 export CLASSPATH
