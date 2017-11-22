@@ -1,0 +1,70 @@
+spring:
+  application:
+    name: api-gateway
+#  profiles:
+#    active: test
+
+
+zuul:
+  routes:
+    config-center-service:
+      path: /config-center-service/**
+      serviceId: config-center-service
+    service-engine-service:
+      path: /service-engine-service/**
+      serviceId: service-engine-service
+    portal-service:
+      path: /portal-service/**
+      serviceId: portal-service
+    catalog-workflow-service:
+      path: /catalog-workflow-service/**
+      serviceId: catalog-workflow-service
+    container-service-service:
+      path: /container-service-service/**
+      serviceId: container-service-service
+    workflow-service:
+      path: /workflow-service/**
+      serviceId: workflow-service
+    monitor-alarm-service:
+      path: /monitor-alarm-service/**
+      serviceId: monitor-alarm-service
+    logging-analyse-service:
+      path: /logging-analyse-service/**
+      serviceId: logging-analyse-service
+    intelligent-om-service:
+      path: /intelligent-om-service/**
+      serviceId: intelligent-om-service
+    flexible-scheduling-service:
+      path: /flexible-scheduling-service/**
+      serviceId: flexible-scheduling-service
+    iaas-adapter-service:
+      path: /iaas-adapter-service/**
+      serviceId: iaas-adapter-service
+    operation-management-service:
+      path: /operation-management-service/**
+      serviceId: operation-management-service
+    report-center-service:
+      path: /report-center-service/**
+      serviceId: report-center-service
+    hello-service:
+      path: /hello-service/**
+      serviceId: hello-service
+  sensitive-headers:
+  add-host-header: true
+
+server:
+  port: 9191
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${eurekaserver.server1.hostname}:${eurekaserver.server1.port}/eureka,http://${eurekaserver.server2.hostname}:${eurekaserver.server2.port}/eureka
+
+eurekaserver:
+  server1:
+    port: 9091
+    hostname: 172.21.11.79
+  server2:
+      port: 9091
+      hostname: 172.21.11.88
