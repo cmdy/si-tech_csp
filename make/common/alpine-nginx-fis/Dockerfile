@@ -2,7 +2,7 @@ FROM cmdy/alpine-nginx:1.13.7
 
 MAINTAINER zhanglin_csd<zhanglin_csd@si-tech.com.cn>
 
-ENV VERSION=0.12.0 
+ENV NODE_VERSION=0.12.0 
 
 RUN  apk add --no-cache \
         libstdc++ \
