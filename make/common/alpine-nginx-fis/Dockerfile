@@ -15,7 +15,7 @@ RUN apk upgrade --update \
  && make -j$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) \
  && make install \
  && paxctl -cm /usr/bin/node \
- && npm cache clean \
+ && npm cache clean --force \
  && apk del make gcc g++ python linux-headers \
  && rm -rf /root/src /tmp/* /usr/share/man /var/cache/apk/* \
     /root/.npm /root/.node-gyp /usr/lib/node_modules/npm/man \
