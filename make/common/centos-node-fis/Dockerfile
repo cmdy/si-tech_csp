@@ -30,8 +30,6 @@ RUN set -ex \
     && cd /root \
     && wget -nv -O nginx-${NGINX_VERSION}.tar.gz http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
     && tar -xf nginx-${NGINX_VERSION}.tar.gz \
-    #&& make install PREFIX=/usr \
-    #&& ldconfig \
     && cd /root/nginx-${NGINX_VERSION} \
     && ./configure \
        --with-http_realip_module \
