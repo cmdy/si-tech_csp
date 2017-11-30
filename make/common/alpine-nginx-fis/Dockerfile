@@ -2,7 +2,7 @@ FROM cmdy/alpine-nginx:1.13.7
 
 MAINTAINER zhanglin_csd<zhanglin_csd@si-tech.com.cn>
 
-ENV NODE_VERSION=v9.2.0
+ENV NODE_VERSION=v0.12.18
 
 RUN apk upgrade --update \
  && apk add --no-cache curl make gcc g++ linux-headers paxctl musl-dev \
