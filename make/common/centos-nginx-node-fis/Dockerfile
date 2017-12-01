@@ -34,13 +34,14 @@ RUN set -ex \
     && make install \
     && cd /root \
     && rm -rf nginx*  \
-    #&& yum remove -y ${INSTALL_PACKAGES} \
+    && yum remove -y ${INSTALL_PACKAGES} \
     && yum history -y undo 3 \
     && yum history -y undo 4 \
+    && yum install -y  subversion \
     && yum clean all \
     && rm -rf /var/cache/yum/* /root/* /tmp/* \
     && cd /usr/local/bin \
-    && ln -s /usr/local/nginx/sbin/nginx nginx
+    && ln -s /usr/local/nginx/sbin/nginx nginx 
 
 EXPOSE 80 443
 
