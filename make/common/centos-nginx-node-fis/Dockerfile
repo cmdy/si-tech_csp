@@ -39,8 +39,6 @@ RUN set -ex \
     && yum history -y undo 4 \
     && yum install -y  subversion \
     && yum clean all \
-    # 设置svn不存储密码
-    && echo "store-plaintext-passwords=no" >>/root/.subversion/servers \
     && rm -rf /var/cache/yum/* /root/* /tmp/* \
     && cd /usr/local/bin \
     && ln -s /usr/local/nginx/sbin/nginx nginx 
