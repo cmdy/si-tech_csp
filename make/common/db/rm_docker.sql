@@ -727,7 +727,7 @@ CREATE TABLE `rm_docker_service_port` (
 DROP TABLE IF EXISTS `rm_docker_source_build_config`;
 CREATE TABLE `rm_docker_source_build_config` (
   `id` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'UUID 主键',
-  `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '名称',
+  `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '项目名称',
   `build_image` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '构建所需镜像名称，包含编译环境',
   `source_type` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '源码类型：git/svn',
   `source_url` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '源码地址',
@@ -744,6 +744,10 @@ CREATE TABLE `rm_docker_source_build_config` (
   `build_num` int(11) DEFAULT NULL COMMENT '构建次数',
   `namespace` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   `image_build_infos` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '存储[Dockerfile目录和镜像Tag]的列表',
+  `is_rely` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '是否构建依赖(0:是；1：否。所依赖镜像构建完成后立即构建此镜像)',
+  `rely_type` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '构建依赖类型（stable,unstable,fail）',
+  `rely_project` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '依赖项目（镜像间用英文逗号隔开）',
+  `poll_s_c_m` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '定时检查源码变更（根据SCM软件的版本号），如果有更新就checkout最新code下来，然后执行构建',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='持续集成配置表';
 
