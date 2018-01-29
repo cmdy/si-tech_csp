@@ -219,8 +219,8 @@ DROP TABLE IF EXISTS `rm_docker_container`;
 CREATE TABLE `rm_docker_container` (
   `id` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'UUID，主键',
   `name` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '容器名称',
-  `command` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '执行的command',
-  `args` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建容器时的参数',
+  `command` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '执行的command',
+  `args` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建容器时的参数',
   `workingDir` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'workingDir',
   `ports` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '容器的端口',
   `env` varchar(1280) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '容器的需要的环境变量,env',
@@ -228,7 +228,7 @@ CREATE TABLE `rm_docker_container` (
   `memory` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '容器的内存',
   `imagePullPolicy` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建容器时的获取镜像的策略',
   `docker_id` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `image_id` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建容器获取的ID',
+  `image_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建容器获取的ID',
   `liveness_probe` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'livenessProbe',
   `insert_time` datetime DEFAULT NULL COMMENT '入库时间',
   PRIMARY KEY (`id`)
