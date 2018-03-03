@@ -35,7 +35,7 @@ if [ ! -d '/var/lib/mysql/mysql' -a "${1%_safe}" = 'mysqld' ]; then
 			echo "GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD' WITH GRANT OPTION;" >> "$TEMP_FILE"
 		fi
 	fi
-	
+	echo 'SET GLOBAL event_scheduler = on;' >> "$TEMP_FILE"
 	echo 'FLUSH PRIVILEGES ;' >> "$TEMP_FILE"
 	cat /tmp/rm_docker.sql >> "$TEMP_FILE"
 	
