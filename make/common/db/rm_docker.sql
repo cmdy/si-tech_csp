@@ -33,6 +33,10 @@ CREATE TABLE `mm_alarm_strategy` (
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   `user_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建人',
   `level` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '告警级别,1:严重告警;2:重要告警;3:一般告警',
+  `start_time` datetime DEFAULT NULL COMMENT '策略生效时间',
+  `end_time` datetime DEFAULT NULL COMMENT '策略结束时间',
+  `alarm_form` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '报警形式，短信，邮件',
+  `alarm_interval` int(11) DEFAULT NULL COMMENT '报警间隔,距上次告警间隔多长时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='告警策略表';
 
@@ -126,8 +130,48 @@ CREATE TABLE `rm_docker_alarm` (
   `latest_time` datetime DEFAULT NULL COMMENT '最近产生时间',
   `namespace` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '资源的namespace',
   `strategy_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `mobiles` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '告警接收人手机号，多人用，隔开',
+  `emails` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '告警接收人手机号，多人用，隔开',
+  `mobile_status` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '短信告警状态，0未发送，1发送中，2发送成功，3发送失败，9发送异常(多次发送失败)',
+  `email_status` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '邮件状态，0未发送，1发送中，2发送成功，3发送失败，9发送异常(多次发送失败)',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='告警信息表';
+
+-- ----------------------------
+-- Table structure for rm_docker_auto_deploy
+-- ----------------------------
+DROP TABLE IF EXISTS `rm_docker_auto_deploy`;
+CREATE TABLE `rm_docker_auto_deploy` (
+  `id` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'UUID编号',
+  `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '名称',
+  `master_vip` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '高可用IP',
+  `network` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '网络模式 calico flannel',
+  `cidr` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '容器网段',
+  `etcd_server` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '计算节点calico连接的ETCD地址',
+  `type` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '部署类型 cluster slave',
+  `slaves` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '计算节点信息',
+  `masters` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '管理节点信息',
+  `status` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '部署状态 \r\n            部署中：deploying\r\n            部署成功 success\r\n            部署失败 failed\r\n            ',
+  `log` mediumtext COLLATE utf8_unicode_ci COMMENT '部署日志',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='自动部署配置表';
+
+-- ----------------------------
+-- Table structure for rm_docker_auto_deploy_event
+-- ----------------------------
+DROP TABLE IF EXISTS `rm_docker_auto_deploy_event`;
+CREATE TABLE `rm_docker_auto_deploy_event` (
+  `id` varchar(32) NOT NULL COMMENT 'ID，主键',
+  `source_build_config_id` varchar(64) DEFAULT NULL COMMENT '集成项目id',
+  `deploy_name` varchar(32) DEFAULT NULL COMMENT '应用名称',
+  `resource_status` varchar(255) DEFAULT NULL COMMENT '事件状态',
+  `resource_name` varchar(255) DEFAULT NULL COMMENT '事件名称',
+  `resource_status_reason` varchar(255) DEFAULT NULL COMMENT '事件原因',
+  `start_time` datetime DEFAULT NULL COMMENT '事件开始时间',
+  `finish_time` datetime DEFAULT NULL COMMENT '事件完成时间',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='自动部署事件表，记录自动部署的事件';
 
 -- ----------------------------
 -- Table structure for rm_docker_ceph_images
@@ -178,6 +222,7 @@ CREATE TABLE `rm_docker_coll` (
   `kpi` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'KPI，目前只有APP',
   `kpi_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'KPI名称',
   `kpi_value` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '采集值',
+  `cluster_id` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '集群Id',
   `coll_time` datetime DEFAULT NULL COMMENT '采集时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='统计信息表';
@@ -209,6 +254,7 @@ CREATE TABLE `rm_docker_config_map` (
   `annotations` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL,
   `namespace` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `data` varchar(5000) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='configmap对应k8s中的configmap';
 
@@ -219,8 +265,8 @@ DROP TABLE IF EXISTS `rm_docker_container`;
 CREATE TABLE `rm_docker_container` (
   `id` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'UUID，主键',
   `name` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '容器名称',
-  `command` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '执行的command',
-  `args` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建容器时的参数',
+  `command` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '执行的command',
+  `args` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建容器时的参数',
   `workingDir` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'workingDir',
   `ports` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '容器的端口',
   `env` varchar(1280) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '容器的需要的环境变量,env',
@@ -228,7 +274,7 @@ CREATE TABLE `rm_docker_container` (
   `memory` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '容器的内存',
   `imagePullPolicy` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建容器时的获取镜像的策略',
   `docker_id` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `image_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建容器获取的ID',
+  `image_id` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建容器获取的ID',
   `liveness_probe` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'livenessProbe',
   `insert_time` datetime DEFAULT NULL COMMENT '入库时间',
   PRIMARY KEY (`id`)
@@ -284,6 +330,7 @@ CREATE TABLE `rm_docker_daemonset` (
   `desired_number_scheduled` int(11) DEFAULT NULL,
   `number_ready` int(11) DEFAULT NULL,
   `namespace` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='daemonset,对应kubernetes中的daemonset';
 
@@ -306,6 +353,7 @@ CREATE TABLE `rm_docker_deployment` (
   `max_surge` varchar(16) COLLATE utf8_unicode_ci DEFAULT NULL,
   `creation_timestamp` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `namespace` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='deployment,对应kubernetes中的deployment';
 
@@ -320,6 +368,7 @@ CREATE TABLE `rm_docker_endpoints` (
   `namespace` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `creation_timestamp` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '建创时间',
   `subsets` varchar(2000) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'JSON格式的终端信息，包括IP和Port',
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -340,6 +389,7 @@ CREATE TABLE `rm_docker_event` (
   `source_component` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '产生的组件，如kube-proxy',
   `first_timestamp` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '第一次产生时间',
   `last_timestamp` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '最新的产生时间',
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='kubernetes事件';
 
@@ -352,10 +402,11 @@ CREATE TABLE `rm_docker_images` (
   `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '镜像名称',
   `version` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '镜像版本',
   `type` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '镜像类型 private 私有 public公有',
+  `locked` tinyint(1) DEFAULT NULL COMMENT '锁定镜像,0-false-未锁定，1-true-锁定',
   `description` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '镜像描述',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  `creater` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '制作者',
+  `creater` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '制作者',
   `registry_url` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='镜像(images)';
@@ -400,6 +451,7 @@ CREATE TABLE `rm_docker_ingress` (
   `ingress_ip` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `rules` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL,
   `namespace` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='ingress,对应kubernetes中的ingress';
 
@@ -445,6 +497,7 @@ CREATE TABLE `rm_docker_namespace` (
   `labels` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '标签',
   `creation_timestamp` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'kubernetes中获取的创建时间',
   `insert_time` datetime DEFAULT NULL,
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Namespace表，一般一个用户对应一个Namespace';
 
@@ -471,6 +524,7 @@ CREATE TABLE `rm_docker_networkpolicy` (
   `insert_time` date DEFAULT NULL,
   `creation_timestamp` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   `from_pod_selector` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '不能访问的应用标签',
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='网络策略表';
 
@@ -483,7 +537,7 @@ CREATE TABLE `rm_docker_node` (
   `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '节点名称',
   `labels` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '标签',
   `cpu` int(11) DEFAULT NULL COMMENT 'CPU，个',
-  `memory` bigint(20) DEFAULT NULL COMMENT 'Memory (KB)',
+  `memory` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Memory (KB)',
   `pods` int(11) DEFAULT NULL COMMENT 'POD的个数',
   `legacy_hostIP` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '主机IP',
   `InternalIP` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '内部IP',
@@ -496,6 +550,7 @@ CREATE TABLE `rm_docker_node` (
   `status` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '状态,Ready,NotReady',
   `lastHeartbeatTime` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '上一次心跳时间',
   `insert_time` datetime DEFAULT NULL COMMENT '入库时间',
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='节点表，可以是主机也可以是虚拟机';
 
@@ -509,6 +564,7 @@ CREATE TABLE `rm_docker_nodegroup` (
   `labels` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '标识，labels，可以将labels赋值给node',
   `description` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '描述',
   `creation_timestamp` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建时间',
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='主机组';
 
@@ -534,6 +590,7 @@ CREATE TABLE `rm_docker_pod` (
   `namespace` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `owner_uid` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建者的uid,一般为replicaset的uid',
   `owner_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '对应owner_uid的名字',
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Kubernetes中对应的POD';
 
@@ -589,6 +646,7 @@ CREATE TABLE `rm_docker_pv` (
   `spec` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '存储类型的配置，json格式',
   `claim_ref_name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   `creation_timestamp` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建时间',
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='persistentvolume';
 
@@ -601,6 +659,7 @@ CREATE TABLE `rm_docker_pvc` (
   `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '名称',
   `labels` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '容量',
   `annotations` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `storage_class_name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   `volume_name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   `capacity` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   `access_modes` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'access_modes：ReadWriteOnce，ReadOnlyMany，ReadWriteMany',
@@ -608,6 +667,7 @@ CREATE TABLE `rm_docker_pvc` (
   `status` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Available ，Bound ，Released ，Failed ',
   `namespace` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   `creation_timestamp` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建时间',
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='PersistentVolumeClaim';
 
@@ -621,6 +681,7 @@ CREATE TABLE `rm_docker_rc` (
   `labels` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '标签',
   `replicas` int(11) DEFAULT NULL COMMENT '副本个数',
   `namespace` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Kubernetes中的RC';
 
@@ -648,6 +709,7 @@ CREATE TABLE `rm_docker_replicaset` (
   `creation_timestamp` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建时间',
   `namespace` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `owner_uid` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建者的UID,一般为deployment的uid',
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='replicaset,对应kubernetes中的replicaset';
 
@@ -675,6 +737,7 @@ CREATE TABLE `rm_docker_resource_quota` (
   `used` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '已使用配额',
   `resource_type` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '资源类型',
   `creation_timestamp` datetime DEFAULT NULL COMMENT '创建时间',
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='资源配额';
 
@@ -691,6 +754,7 @@ CREATE TABLE `rm_docker_secret` (
   `namespace` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `data` varchar(5000) COLLATE utf8_unicode_ci DEFAULT NULL,
   `type` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='configmap对应k8s中的secret';
 
@@ -707,6 +771,7 @@ CREATE TABLE `rm_docker_service` (
   `type` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'ClusterIP,NodePort,LoadBalancer,ExternalName',
   `creation_timestamp` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建时间',
   `namespace` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='kubernetes中service';
 
@@ -720,6 +785,20 @@ CREATE TABLE `rm_docker_service_port` (
   `service_id` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='服务和端口关系表';
+
+-- ----------------------------
+-- Table structure for rm_docker_snapshot
+-- ----------------------------
+DROP TABLE IF EXISTS `rm_docker_snapshot`;
+CREATE TABLE `rm_docker_snapshot` (
+  `id` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'UUID，主键',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '名称',
+  `pv_id` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'pv编号',
+  `pv_name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属pv名称',
+  `utc_create` datetime DEFAULT NULL,
+  `remark` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '快照描述',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='快照';
 
 -- ----------------------------
 -- Table structure for rm_docker_source_build_config
@@ -748,6 +827,8 @@ CREATE TABLE `rm_docker_source_build_config` (
   `rely_type` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '构建依赖类型（stable,unstable,fail）',
   `rely_project` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '依赖项目（镜像间用英文逗号隔开）',
   `poll_s_c_m` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '定时检查源码变更（根据SCM软件的版本号），如果有更新就checkout最新code下来，然后执行构建',
+  `project_type` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '项目类型',
+  `auto_build_infos` varchar(10240) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '自动部署列表信息（包含集群，应用，和匹配规则）',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='持续集成配置表';
 
@@ -766,6 +847,7 @@ CREATE TABLE `rm_docker_statefulset` (
   `annotations` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL,
   `creation_timestamp` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建时间',
   `namespace` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='statefulset,对应kubernetes中的statefulset(petset)';
 
@@ -778,6 +860,7 @@ CREATE TABLE `rm_docker_thirdpartyresources` (
   `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '名称',
   `versions` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '版本',
   `description` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '描述',
+  `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='thirdpartyresources';
 
@@ -832,24 +915,6 @@ CREATE TABLE `rm_local_remote_resource` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
--- ----------------------------
--- Table structure for rm_tasks
--- ----------------------------
-DROP TABLE IF EXISTS `rm_tasks`;
-CREATE TABLE `rm_tasks` (
-  `id` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT '任务编号',
-  `type` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'CREATE_BANDWIDTH-创建公网带宽, \r\n            UPDATE_BANDWIDTH-变更公网带宽, \r\n            DELETE_BANDWIDTH-删除公网带宽, \r\n            CREATE_LOADBALANCE-新增负载均衡, \r\n            UPDATE_LOADBALANCE-变更负载均衡, \r\n            ENABLE_LOADBALANCE-启用负载均衡,\r\n            DISABLE_LOADBALANCE-禁用负载均衡,\r\n            DELETE_LOADBALANCE-删除负载均衡,\r\n            CREATE_PUBLICIP-新增公网IP, \r\n            DELETE_PUBLICIP-删除公网IP, \r\n            UNBIND_PUBLICIP-解除绑定公网IP,\r\n            ASSIGN_VIRTUALMACHINE-分配虚拟机, \r\n            CREATE_VIRTUALMACHINE-创建虚拟机, \r\n            UPDATE_VIRTUALMACHINE-变更虚拟机, \r\n            DELETE_VIRTUALMACHINE-删除虚拟机, \r\n            START_VIRTUALMACHINE-启动虚拟机, \r\n            STOP_VIRTUALMACHINE-停止虚拟机',
-  `status` int(11) NOT NULL COMMENT '0：任务创建；1：任务执行中；2：任务完成；3：任务未知状态',
-  `input` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '任务输入',
-  `output` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '任务输出',
-  `result` int(11) DEFAULT NULL COMMENT '0：成功；1：失败',
-  `in_remark` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '输入备注',
-  `out_remark` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '输出备注',
-  `create_time` datetime DEFAULT NULL COMMENT '任务创建时间',
-  `run_time` datetime DEFAULT NULL COMMENT '任务开始时间',
-  `finish_time` datetime DEFAULT NULL COMMENT '任务完成时间',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
 -- Table structure for sys_operation_log
@@ -920,17 +985,6 @@ CREATE TABLE `sys_user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户';
 
 -- ----------------------------
--- Table structure for sys_user_role
--- ----------------------------
-DROP TABLE IF EXISTS `sys_user_role`;
-CREATE TABLE `sys_user_role` (
-  `user_id` varchar(64) NOT NULL COMMENT '用户编号',
-  `role_id` varchar(64) NOT NULL COMMENT '角色编号',
-  `id` varchar(64) NOT NULL COMMENT '编号',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户与角色关系表';
-
--- ----------------------------
 --  sys_user init data
 -- ----------------------------
 set character set utf8;
@@ -942,10 +996,21 @@ INSERT INTO `sys_role` (`id`, `name`, `remark`, `update_time`, `operation_type`)
 
 INSERT INTO `sys_user_role` (`user_id`, `role_id`, `id`) VALUES ('1', '9c69ab75b21640c089d0049dc61b98ed', 'a4dc19e9-b457-41a2-8c1a-55fa3307ff0e');
 
+
+-- ----------------------------
+-- Table structure for sys_user_role
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_user_role`;
+CREATE TABLE `sys_user_role` (
+  `user_id` varchar(64) NOT NULL COMMENT '用户编号',
+  `role_id` varchar(64) NOT NULL COMMENT '角色编号',
+  `id` varchar(64) NOT NULL COMMENT '编号',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户与角色关系表';
+
 -- ----------------------------
 -- Table structure for tb_kube_conf_cont_dock
 -- ----------------------------
-set character set utf8;
 DROP TABLE IF EXISTS `tb_kube_conf_cont_dock`;
 CREATE TABLE `tb_kube_conf_cont_dock` (
   `DEVICE` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT '节点标识IP地址',
@@ -1041,69 +1106,74 @@ CREATE TABLE `tb_kube_perf_dock_network_interface` (
 -- ----------------------------
 -- View structure for sys_role_user_login_view
 -- ----------------------------
+DROP VIEW IF EXISTS `sys_role_user_login_view`;
 CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `sys_role_user_login_view` AS select `b`.`id` AS `user_id`,`b`.`account` AS `login_name`,`b`.`name` AS `display_name`,`b`.`password` AS `password`,`b`.`status` AS `status`,`b`.`mobile` AS `mobile`,`b`.`email` AS `email`,`b`.`employee_id` AS `employee_id`,`b`.`parent_id` AS `parent_id`,`b`.`enable` AS `enable`,`a`.`name` AS `role_name`,`a`.`remark` AS `role_remark`,`a`.`operation_type` AS `role_operation_type`,`a`.`update_time` AS `role_update_time`,`c`.`role_id` AS `role_id` from ((`sys_user` `b` left join `sys_user_role` `c` on((`b`.`id` = `c`.`user_id`))) left join `sys_role` `a` on((`a`.`id` = `c`.`role_id`))) order by `b`.`id` desc ;
 
 -- ----------------------------
 -- View structure for v_mm_alarm_strategy_rule_info
 -- ----------------------------
-CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `v_mm_alarm_strategy_rule_info` AS select `mm_alarm_strategy`.`id` AS `strategy_id`,`mm_alarm_strategy`.`name` AS `strategy_name`,`mm_alarm_strategy`.`period` AS `period`,`mm_alarm_strategy`.`create_time` AS `create_time`,`mm_alarm_strategy`.`user_id` AS `user_id`,`mm_alarm_strategy`.`level` AS `level`,`mm_alarm_strategy_resource`.`resource_type` AS `resource_type`,`mm_alarm_strategy_resource`.`resource_id` AS `resource_id`,`mm_alarm_rule`.`kpi` AS `kpi`,`mm_alarm_rule`.`expression` AS `expression`,`mm_alarm_rule`.`statistic` AS `statistic`,`mm_alarm_rule`.`threshold` AS `threshold` from ((`mm_alarm_strategy` join `mm_alarm_strategy_resource`) join `mm_alarm_rule`) where ((`mm_alarm_strategy`.`id` = `mm_alarm_strategy_resource`.`strategy_id`) and (`mm_alarm_rule`.`strategy_id` = `mm_alarm_strategy`.`id`)) ;
+DROP VIEW IF EXISTS `v_mm_alarm_strategy_rule_info`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `v_mm_alarm_strategy_rule_info` AS select `mm_alarm_strategy`.`id` AS `strategy_id`,`mm_alarm_strategy`.`name` AS `strategy_name`,`mm_alarm_strategy`.`period` AS `period`,`mm_alarm_strategy`.`create_time` AS `create_time`,`mm_alarm_strategy`.`user_id` AS `user_id`,`mm_alarm_strategy`.`level` AS `level`,`mm_alarm_strategy_resource`.`resource_type` AS `resource_type`,`mm_alarm_strategy_resource`.`resource_id` AS `resource_id`,`mm_alarm_rule`.`kpi` AS `kpi`,`mm_alarm_rule`.`expression` AS `expression`,`mm_alarm_rule`.`statistic` AS `statistic`,`mm_alarm_rule`.`threshold` AS `threshold`,`mm_alarm_strategy`.`start_time` AS `start_time`,`mm_alarm_strategy`.`end_time` AS `end_time`,`mm_alarm_strategy`.`alarm_form` AS `alarm_form`,`mm_alarm_strategy`.`alarm_interval` AS `alarm_interval` from ((`mm_alarm_strategy` join `mm_alarm_strategy_resource`) join `mm_alarm_rule`) where ((`mm_alarm_strategy`.`id` = `mm_alarm_strategy_resource`.`strategy_id`) and (`mm_alarm_rule`.`strategy_id` = `mm_alarm_strategy`.`id`)) ;
 
 -- ----------------------------
 -- View structure for v_rm_docker_app_pod
 -- ----------------------------
-
+DROP VIEW IF EXISTS `v_rm_docker_app_pod`;
 CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `v_rm_docker_app_pod` AS select `rm_docker_pod`.`id` AS `pod_id`,`rm_docker_pod`.`name` AS `pod_name`,`rm_docker_pod`.`generateName` AS `generateName`,`rm_docker_pod`.`labels` AS `labels`,`rm_docker_pod`.`annotations` AS `annotations`,`rm_docker_pod`.`restart_policy` AS `restart_policy`,`rm_docker_pod`.`pod_IP` AS `pod_IP`,`rm_docker_pod`.`creation_timestamp` AS `creation_timestamp`,`rm_docker_pod`.`start_time` AS `start_time`,`rm_docker_pod`.`status` AS `status`,`rm_docker_pod`.`node_id` AS `node_id`,`rm_docker_pod`.`insert_time` AS `insert_time`,`rm_application`.`id` AS `application_id`,`rm_application`.`name` AS `application_name`,`rm_application`.`alias` AS `alias`,`rm_application`.`user_id` AS `user_id`,`rm_application`.`integrator` AS `integrator`,`rm_application`.`department` AS `department`,`rm_application`.`parent_id` AS `parent_id`,`rm_application`.`remark` AS `remark` from (`rm_docker_pod` left join (`rm_application_resource` join `rm_application`) on(((`rm_docker_pod`.`id` = `rm_application_resource`.`resource_id`) and (`rm_application_resource`.`application_id` = `rm_application`.`id`)))) ;
 
 -- ----------------------------
 -- View structure for v_rm_docker_app_rc
 -- ----------------------------
-
+DROP VIEW IF EXISTS `v_rm_docker_app_rc`;
 CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `v_rm_docker_app_rc` AS select `rm_docker_rc`.`id` AS `rc_id`,`rm_docker_rc`.`name` AS `rc_name`,`rm_docker_rc`.`labels` AS `rc_labels`,`rm_docker_rc`.`replicas` AS `rc_replicas`,`rm_application`.`id` AS `application_id`,`rm_application`.`name` AS `application_name`,`rm_application`.`alias` AS `alias`,`rm_application`.`user_id` AS `user_id`,`rm_application`.`integrator` AS `integrator`,`rm_application`.`department` AS `department`,`rm_application`.`parent_id` AS `parent_id`,`rm_application`.`remark` AS `remark` from (`rm_application` left join (`rm_application_resource` join `rm_docker_rc`) on(((`rm_docker_rc`.`id` = `rm_application_resource`.`resource_id`) and (`rm_application_resource`.`application_id` = `rm_application`.`id`)))) ;
 
 -- ----------------------------
 -- View structure for v_rm_docker_container_pod
 -- ----------------------------
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `v_rm_docker_container_pod` AS select `rm_docker_container`.`id` AS `container_id`,`rm_docker_container`.`name` AS `container_name`,`rm_docker_container`.`command` AS `container_command`,`rm_docker_container`.`args` AS `container_args`,`rm_docker_container`.`workingDir` AS `container_workingDir`,`rm_docker_container`.`ports` AS `container_ports`,`rm_docker_container`.`env` AS `container_env`,`rm_docker_container`.`cpu` AS `container_cpu`,`rm_docker_container`.`memory` AS `container_memory`,`rm_docker_container`.`imagePullPolicy` AS `container_imagePullPolicy`,`rm_docker_container`.`image_id` AS `container_image_id`,`rm_docker_container`.`insert_time` AS `container_insert_time`,`rm_docker_container`.`liveness_probe` AS `container_liveness_probe`,`rm_docker_pod`.`id` AS `pod_id`,`rm_docker_pod`.`name` AS `pod_name`,`rm_docker_pod`.`generateName` AS `pod_generateName`,`rm_docker_pod`.`labels` AS `pod_labels`,`rm_docker_pod`.`restart_policy` AS `pod_restart_policy`,`rm_docker_pod`.`annotations` AS `pod_annotations`,`rm_docker_pod`.`pod_IP` AS `pod_IP`,`rm_docker_pod`.`creation_timestamp` AS `pod_creation_timestamp`,`rm_docker_pod`.`start_time` AS `pod_start_time`,`rm_docker_pod`.`status` AS `pod_status`,`rm_docker_pod`.`node_id` AS `pod_node_id`,`rm_docker_pod`.`insert_time` AS `pod_insert_time`,`rm_docker_container`.`docker_id` AS `container_docker_id`,`rm_docker_pod`.`namespace` AS `namespace` from ((`rm_docker_container` join `rm_docker_pod`) join `rm_docker_container_relation`) where ((`rm_docker_container`.`id` = `rm_docker_container_relation`.`container_id`) and (`rm_docker_container_relation`.`pod_id` = `rm_docker_pod`.`id`)) ;
+DROP VIEW IF EXISTS `v_rm_docker_container_pod`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `v_rm_docker_container_pod` AS select `rm_docker_container`.`id` AS `container_id`,`rm_docker_container`.`name` AS `container_name`,`rm_docker_container`.`command` AS `container_command`,`rm_docker_container`.`args` AS `container_args`,`rm_docker_container`.`workingDir` AS `container_workingDir`,`rm_docker_container`.`ports` AS `container_ports`,`rm_docker_container`.`env` AS `container_env`,`rm_docker_container`.`cpu` AS `container_cpu`,`rm_docker_container`.`memory` AS `container_memory`,`rm_docker_container`.`imagePullPolicy` AS `container_imagePullPolicy`,`rm_docker_container`.`image_id` AS `container_image_id`,`rm_docker_container`.`insert_time` AS `container_insert_time`,`rm_docker_container`.`liveness_probe` AS `container_liveness_probe`,`rm_docker_pod`.`id` AS `pod_id`,`rm_docker_pod`.`name` AS `pod_name`,`rm_docker_pod`.`generateName` AS `pod_generateName`,`rm_docker_pod`.`labels` AS `pod_labels`,`rm_docker_pod`.`restart_policy` AS `pod_restart_policy`,`rm_docker_pod`.`annotations` AS `pod_annotations`,`rm_docker_pod`.`pod_IP` AS `pod_IP`,`rm_docker_pod`.`creation_timestamp` AS `pod_creation_timestamp`,`rm_docker_pod`.`start_time` AS `pod_start_time`,`rm_docker_pod`.`status` AS `pod_status`,`rm_docker_pod`.`node_id` AS `pod_node_id`,`rm_docker_pod`.`insert_time` AS `pod_insert_time`,`rm_docker_container`.`docker_id` AS `container_docker_id`,`rm_docker_pod`.`namespace` AS `namespace`,`rm_docker_pod`.`cluster` AS `cluster` from ((`rm_docker_container` join `rm_docker_pod`) join `rm_docker_container_relation`) where ((`rm_docker_container`.`id` = `rm_docker_container_relation`.`container_id`) and (`rm_docker_container_relation`.`pod_id` = `rm_docker_pod`.`id`)) ;
 
 -- ----------------------------
 -- View structure for v_rm_docker_deploy_pod
 -- ----------------------------
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `v_rm_docker_deploy_pod` AS select `rm_docker_deployment`.`id` AS `deploy_id`,`rm_docker_deployment`.`name` AS `deploy_name`,`rm_docker_deployment`.`labels` AS `deploy_labels`,`rm_docker_deployment`.`generation` AS `deploy_generation`,`rm_docker_deployment`.`replicas` AS `deploy_replicas`,`rm_docker_deployment`.`updated_replicas` AS `deploy_updated_replicas`,`rm_docker_deployment`.`available_replicas` AS `deploy_available_replicas`,`rm_docker_deployment`.`unavailable_replicas` AS `deploy_unavailable_replicas`,`rm_docker_deployment`.`selector` AS `deploy_selector`,`rm_docker_deployment`.`annotations` AS `deploy_annotations`,`rm_docker_deployment`.`max_unavailable` AS `deploy_max_unavailable`,`rm_docker_deployment`.`max_surge` AS `deploy_max_surge`,`rm_docker_deployment`.`creation_timestamp` AS `deploy_creation_timestamp`,`rm_docker_deployment`.`namespace` AS `deploy_namespace`,`rm_docker_pod`.`name` AS `pod_name`,`rm_docker_pod`.`generateName` AS `pod_generateName`,`rm_docker_pod`.`labels` AS `pod_labels`,`rm_docker_pod`.`annotations` AS `pod_annotations`,`rm_docker_pod`.`restart_policy` AS `pod_restart_policy`,`rm_docker_pod`.`pod_IP` AS `pod_IP`,`rm_docker_pod`.`creation_timestamp` AS `pod_create_timestamp`,`rm_docker_pod`.`start_time` AS `pod_start_time`,`rm_docker_pod`.`status` AS `pod_status`,`rm_docker_pod`.`insert_time` AS `pod_insert_time`,`rm_docker_pod`.`liveness_probe` AS `pod_liveness_probe`,`rm_docker_pod`.`created` AS `pod_created`,`rm_docker_pod`.`owner_name` AS `replicaset_name`,`rm_docker_pod`.`owner_uid` AS `replicaset_uid`,`rm_docker_pod`.`id` AS `pod_id` from (((`rm_docker_deployment` join `rm_local_remote_resource` on((`rm_docker_deployment`.`id` = `rm_local_remote_resource`.`local_resource_id`))) join `rm_docker_replicaset` on((`rm_local_remote_resource`.`remote_resource_id` = `rm_docker_replicaset`.`owner_uid`))) join `rm_docker_pod` on((`rm_docker_replicaset`.`name` = `rm_docker_pod`.`owner_name`))) ;
+DROP VIEW IF EXISTS `v_rm_docker_deploy_pod`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `v_rm_docker_deploy_pod` AS select `rm_docker_deployment`.`id` AS `deploy_id`,`rm_docker_deployment`.`name` AS `deploy_name`,`rm_docker_deployment`.`labels` AS `deploy_labels`,`rm_docker_deployment`.`generation` AS `deploy_generation`,`rm_docker_deployment`.`replicas` AS `deploy_replicas`,`rm_docker_deployment`.`updated_replicas` AS `deploy_updated_replicas`,`rm_docker_deployment`.`available_replicas` AS `deploy_available_replicas`,`rm_docker_deployment`.`unavailable_replicas` AS `deploy_unavailable_replicas`,`rm_docker_deployment`.`selector` AS `deploy_selector`,`rm_docker_deployment`.`annotations` AS `deploy_annotations`,`rm_docker_deployment`.`max_unavailable` AS `deploy_max_unavailable`,`rm_docker_deployment`.`max_surge` AS `deploy_max_surge`,`rm_docker_deployment`.`creation_timestamp` AS `deploy_creation_timestamp`,`rm_docker_deployment`.`namespace` AS `deploy_namespace`,`rm_docker_pod`.`name` AS `pod_name`,`rm_docker_pod`.`generateName` AS `pod_generateName`,`rm_docker_pod`.`labels` AS `pod_labels`,`rm_docker_pod`.`annotations` AS `pod_annotations`,`rm_docker_pod`.`restart_policy` AS `pod_restart_policy`,`rm_docker_pod`.`pod_IP` AS `pod_IP`,`rm_docker_pod`.`creation_timestamp` AS `pod_create_timestamp`,`rm_docker_pod`.`start_time` AS `pod_start_time`,`rm_docker_pod`.`status` AS `pod_status`,`rm_docker_pod`.`insert_time` AS `pod_insert_time`,`rm_docker_pod`.`liveness_probe` AS `pod_liveness_probe`,`rm_docker_pod`.`created` AS `pod_created`,`rm_docker_pod`.`owner_name` AS `replicaset_name`,`rm_docker_pod`.`owner_uid` AS `replicaset_uid`,`rm_docker_pod`.`id` AS `pod_id`,`rm_docker_deployment`.`cluster` AS `cluster` from (((`rm_docker_deployment` join `rm_local_remote_resource` on(((`rm_docker_deployment`.`id` = `rm_local_remote_resource`.`local_resource_id`) and (`rm_docker_deployment`.`cluster` = `rm_local_remote_resource`.`remote_access_id`)))) join `rm_docker_replicaset` on(((`rm_local_remote_resource`.`remote_resource_id` = `rm_docker_replicaset`.`owner_uid`) and (`rm_docker_replicaset`.`cluster` = `rm_local_remote_resource`.`remote_access_id`)))) join `rm_docker_pod` on(((`rm_docker_replicaset`.`name` = `rm_docker_pod`.`owner_name`) and (`rm_docker_pod`.`cluster` = `rm_local_remote_resource`.`remote_access_id`)))) ;
 
 -- ----------------------------
 -- View structure for v_rm_docker_image_policy_repository
 -- ----------------------------
-CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER  VIEW `v_rm_docker_image_policy_repository` AS (select `a`.`id` AS `id`,`a`.`policy_name` AS `policy_name`,`a`.`policy_describe` AS `policy_describe`,`a`.`repository_id` AS `repository_id`,`a`.`policy_enable` AS `policy_enable`,`a`.`creator` AS `policy_creator`,`a`.`insert_time` AS `policy_insert_time`,`b`.`name` AS `repository_name`,`b`.`url` AS `repository_url` from (`rm_docker_image_replication_policy` `a` left join `rm_docker_repository` `b` on((`a`.`repository_id` = `b`.`id`)))) ;
+DROP VIEW IF EXISTS `v_rm_docker_image_policy_repository`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `v_rm_docker_image_policy_repository` AS (select `a`.`id` AS `id`,`a`.`policy_name` AS `policy_name`,`a`.`policy_describe` AS `policy_describe`,`a`.`repository_id` AS `repository_id`,`a`.`policy_enable` AS `policy_enable`,`a`.`creator` AS `policy_creator`,`a`.`insert_time` AS `policy_insert_time`,`b`.`name` AS `repository_name`,`b`.`url` AS `repository_url` from (`rm_docker_image_replication_policy` `a` left join `rm_docker_repository` `b` on((`a`.`repository_id` = `b`.`id`)))) ;
 
 -- ----------------------------
 -- View structure for v_rm_docker_pod
 -- ----------------------------
-CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `v_rm_docker_pod` AS select `rm_docker_pod`.`id` AS `pod_id`,`rm_docker_pod`.`name` AS `name`,`rm_docker_pod`.`labels` AS `labels`,`rm_docker_pod`.`annotations` AS `annotations`,`rm_docker_pod`.`pod_IP` AS `pod_IP`,`rm_docker_pod`.`restart_policy` AS `restart_policy`,`rm_docker_pod`.`creation_timestamp` AS `creation_timestamp`,`rm_docker_pod`.`start_time` AS `start_time`,`rm_docker_pod`.`status` AS `status`,`rm_docker_pod`.`node_id` AS `node_id`,`rm_docker_pod`.`insert_time` AS `insert_time`,`rm_docker_pod`.`namespace` AS `namespace`,`rm_docker_node`.`name` AS `node_name`,`rm_docker_node`.`InternalIP` AS `InternalIP` from (`rm_docker_pod` left join `rm_docker_node` on((`rm_docker_pod`.`node_id` = `rm_docker_node`.`id`))) ;
+DROP VIEW IF EXISTS `v_rm_docker_pod`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `v_rm_docker_pod` AS select `rm_docker_pod`.`id` AS `pod_id`,`rm_docker_pod`.`name` AS `name`,`rm_docker_pod`.`labels` AS `labels`,`rm_docker_pod`.`annotations` AS `annotations`,`rm_docker_pod`.`pod_IP` AS `pod_IP`,`rm_docker_pod`.`restart_policy` AS `restart_policy`,`rm_docker_pod`.`creation_timestamp` AS `creation_timestamp`,`rm_docker_pod`.`start_time` AS `start_time`,`rm_docker_pod`.`status` AS `status`,`rm_docker_pod`.`node_id` AS `node_id`,`rm_docker_pod`.`insert_time` AS `insert_time`,`rm_docker_pod`.`namespace` AS `namespace`,`rm_docker_node`.`name` AS `node_name`,`rm_docker_node`.`InternalIP` AS `InternalIP`,`rm_docker_pod`.`cluster` AS `cluster` from (`rm_docker_pod` join `rm_docker_node` on(((`rm_docker_pod`.`node_id` = `rm_docker_node`.`id`) and (`rm_docker_pod`.`cluster` = `rm_docker_node`.`cluster`)))) ;
 
 -- ----------------------------
 -- View structure for v_rm_docker_pod_node
 -- ----------------------------
+DROP VIEW IF EXISTS `v_rm_docker_pod_node`;
 CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `v_rm_docker_pod_node` AS select `rm_docker_pod`.`id` AS `id`,`rm_docker_pod`.`name` AS `name`,`rm_docker_pod`.`labels` AS `labels`,`rm_docker_pod`.`annotations` AS `annotations`,`rm_docker_pod`.`restart_policy` AS `restart_policy`,`rm_docker_pod`.`pod_IP` AS `pod_IP`,`rm_docker_pod`.`creation_timestamp` AS `creation_timestamp`,`rm_docker_pod`.`start_time` AS `start_time`,`rm_docker_pod`.`status` AS `status`,`rm_docker_pod`.`insert_time` AS `insert_time`,`rm_docker_pod`.`node_id` AS `node_id`,`rm_docker_node`.`name` AS `node_name`,`rm_docker_node`.`labels` AS `node_labels`,`rm_docker_node`.`cpu` AS `cpu`,`rm_docker_node`.`memory` AS `memory`,`rm_docker_node`.`pods` AS `pods`,`rm_docker_node`.`legacy_hostIP` AS `legacy_hostIP`,`rm_docker_node`.`InternalIP` AS `InternalIP`,`rm_docker_node`.`kernelVersion` AS `kernelVersion`,`rm_docker_node`.`osImage` AS `osImage`,`rm_docker_node`.`containerRuntimeVersion` AS `containerRuntimeVersion`,`rm_docker_node`.`kubeletVersion` AS `kubeletVersion`,`rm_docker_node`.`kubeProxyVersion` AS `kubeProxyVersion`,`rm_docker_node`.`creationTimestamp` AS `creationTimestamp`,`rm_docker_node`.`status` AS `node_status`,`rm_docker_node`.`lastHeartbeatTime` AS `lastHeartbeatTime` from (`rm_docker_node` join `rm_docker_pod`) where (`rm_docker_pod`.`node_id` = `rm_docker_node`.`id`) ;
 
 -- ----------------------------
 -- View structure for v_rm_docker_pod_service
 -- ----------------------------
-
+DROP VIEW IF EXISTS `v_rm_docker_pod_service`;
 CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `v_rm_docker_pod_service` AS select `rm_docker_service`.`id` AS `service_id`,`rm_docker_service`.`name` AS `service_name`,`rm_docker_service`.`labels` AS `service_labels`,`rm_docker_service`.`cluster_IP` AS `service_cluster_IP`,`rm_docker_service`.`creation_timestamp` AS `service_creation_timestamp`,`rm_docker_pod`.`id` AS `pod_id`,`rm_docker_pod`.`name` AS `pod_name`,`rm_docker_pod`.`generateName` AS `generateName`,`rm_docker_pod`.`labels` AS `pod_labels`,`rm_docker_pod`.`annotations` AS `annotations`,`rm_docker_pod`.`restart_policy` AS `restart_policy`,`rm_docker_pod`.`pod_IP` AS `pod_IP`,`rm_docker_pod`.`creation_timestamp` AS `creation_timestamp`,`rm_docker_pod`.`start_time` AS `start_time`,`rm_docker_pod`.`status` AS `status`,`rm_docker_pod`.`node_id` AS `node_id`,`rm_docker_pod`.`insert_time` AS `insert_time` from (`rm_docker_pod` left join (`rm_docker_service` join `rm_docker_pod_service`) on(((`rm_docker_service`.`id` = `rm_docker_pod_service`.`service_id`) and (`rm_docker_pod_service`.`pod_id` = `rm_docker_pod`.`id`)))) ;
 
 -- ----------------------------
 -- View structure for v_rm_docker_relation_user_cluster
 -- ----------------------------
-
+DROP VIEW IF EXISTS `v_rm_docker_relation_user_cluster`;
 CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `v_rm_docker_relation_user_cluster` AS (select `a`.`user_id` AS `user_id`,`a`.`cluster_id` AS `cluster_id`,`b`.`name` AS `NAME`,`b`.`url` AS `URL` from (`rm_docker_relation_user_cluster` `a` left join `rm_docker_cluster` `b` on((`a`.`cluster_id` = `b`.`id`)))) ;
 
 -- ----------------------------
 -- View structure for v_rm_docker_service_port
 -- ----------------------------
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `v_rm_docker_service_port` AS select `rm_docker_port`.`id` AS `port_id`,`rm_docker_port`.`name` AS `port_name`,`rm_docker_port`.`protocol` AS `protocol`,`rm_docker_port`.`port` AS `port`,`rm_docker_port`.`target_port` AS `target_port`,`rm_docker_port`.`node_port` AS `node_port`,`rm_docker_port`.`type` AS `type`,`rm_docker_service`.`id` AS `id`,`rm_docker_service`.`name` AS `service_name`,`rm_docker_service`.`cluster_IP` AS `cluster_IP`,`rm_docker_service`.`creation_timestamp` AS `creation_timestamp`,`rm_docker_service`.`namespace` AS `namespace`,`rm_docker_service`.`labels` AS `labels` from ((`rm_docker_port` join `rm_docker_service`) join `rm_docker_service_port` on(((`rm_docker_service`.`id` = `rm_docker_service_port`.`service_id`) and (`rm_docker_port`.`id` = `rm_docker_service_port`.`port_id`)))) where ((`rm_docker_port`.`id` = `rm_docker_service_port`.`port_id`) and (`rm_docker_service`.`id` = `rm_docker_service_port`.`service_id`)) ;
+DROP VIEW IF EXISTS `v_rm_docker_service_port`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `v_rm_docker_service_port` AS select `rm_docker_port`.`id` AS `port_id`,`rm_docker_port`.`name` AS `port_name`,`rm_docker_port`.`protocol` AS `protocol`,`rm_docker_port`.`port` AS `port`,`rm_docker_port`.`target_port` AS `target_port`,`rm_docker_port`.`node_port` AS `node_port`,`rm_docker_port`.`type` AS `type`,`rm_docker_service`.`id` AS `id`,`rm_docker_service`.`name` AS `service_name`,`rm_docker_service`.`cluster_IP` AS `cluster_IP`,`rm_docker_service`.`creation_timestamp` AS `creation_timestamp`,`rm_docker_service`.`namespace` AS `namespace`,`rm_docker_service`.`labels` AS `labels`,`rm_docker_service`.`cluster` AS `cluster` from ((`rm_docker_port` join `rm_docker_service`) join `rm_docker_service_port` on(((`rm_docker_service`.`id` = `rm_docker_service_port`.`service_id`) and (`rm_docker_port`.`id` = `rm_docker_service_port`.`port_id`)))) where ((`rm_docker_port`.`id` = `rm_docker_service_port`.`port_id`) and (`rm_docker_service`.`id` = `rm_docker_service_port`.`service_id`)) ;
 
 -- ----------------------------
 -- Procedure structure for DEL_RM_DOCKER_COLL
