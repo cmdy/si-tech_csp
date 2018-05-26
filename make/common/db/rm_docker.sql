@@ -985,6 +985,17 @@ CREATE TABLE `sys_user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户';
 
 -- ----------------------------
+-- Table structure for sys_user_role
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_user_role`;
+CREATE TABLE `sys_user_role` (
+  `user_id` varchar(64) NOT NULL COMMENT '用户编号',
+  `role_id` varchar(64) NOT NULL COMMENT '角色编号',
+  `id` varchar(64) NOT NULL COMMENT '编号',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户与角色关系表';
+
+-- ----------------------------
 --  sys_user init data
 -- ----------------------------
 set character set utf8;
@@ -995,18 +1006,6 @@ INSERT INTO `sys_role` (`id`, `name`, `remark`, `update_time`, `operation_type`)
 INSERT INTO `sys_role` (`id`, `name`, `remark`, `update_time`, `operation_type`) VALUES ('1', '业务管理员', '业务管理员', NOW(), '1');
 
 INSERT INTO `sys_user_role` (`user_id`, `role_id`, `id`) VALUES ('1', '9c69ab75b21640c089d0049dc61b98ed', 'a4dc19e9-b457-41a2-8c1a-55fa3307ff0e');
-
-
--- ----------------------------
--- Table structure for sys_user_role
--- ----------------------------
-DROP TABLE IF EXISTS `sys_user_role`;
-CREATE TABLE `sys_user_role` (
-  `user_id` varchar(64) NOT NULL COMMENT '用户编号',
-  `role_id` varchar(64) NOT NULL COMMENT '角色编号',
-  `id` varchar(64) NOT NULL COMMENT '编号',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户与角色关系表';
 
 -- ----------------------------
 -- Table structure for tb_kube_conf_cont_dock
