@@ -3,7 +3,6 @@ set character set utf8;
 ALTER DATABASE `rm_docker` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 use rm_docker;
-
 -- ----------------------------
 -- Table structure for mm_alarm_rule
 -- ----------------------------
@@ -208,8 +207,9 @@ DROP TABLE IF EXISTS `rm_docker_cluster`;
 CREATE TABLE `rm_docker_cluster` (
   `id` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'UUID 主键',
   `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '名称',
-  `url` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '路径地址',
-  `insert_time` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建时间',
+  `url` varchar(255) COLLATE utf8_unicode_ci DEFAULT '' COMMENT '路径地址',
+  `conn_repo` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '关联仓库',
+  `insert_time` date DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -720,8 +720,12 @@ DROP TABLE IF EXISTS `rm_docker_repository`;
 CREATE TABLE `rm_docker_repository` (
   `id` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'UUID 主键',
   `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '名称',
+  `username` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '用户名',
+  `password` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '密码',
   `url` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '镜像库地址',
+  `state` tinyint(1) DEFAULT '0' COMMENT '是否已关联集群，0：未关联，1：已关联',
   `insert_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `remark` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '描述',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='rm_docker_repository';
 
@@ -829,6 +833,7 @@ CREATE TABLE `rm_docker_source_build_config` (
   `poll_s_c_m` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '定时检查源码变更（根据SCM软件的版本号），如果有更新就checkout最新code下来，然后执行构建',
   `project_type` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '项目类型',
   `auto_build_infos` varchar(10240) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '自动部署列表信息（包含集群，应用，和匹配规则）',
+  `source_config_deploy_info` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '自动创建应用的相关信息（包括镜像名称、应用名称、集群，业务）',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='持续集成配置表';
 
@@ -863,6 +868,7 @@ CREATE TABLE `rm_docker_thirdpartyresources` (
   `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='thirdpartyresources';
+
 
 -- ----------------------------
 -- Table structure for rm_docker_volumemount
@@ -914,6 +920,7 @@ CREATE TABLE `rm_local_remote_resource` (
   `resource_type_id` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '资源类型编号',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
 
 
 -- ----------------------------
@@ -1006,6 +1013,7 @@ INSERT INTO `sys_role` (`id`, `name`, `remark`, `update_time`, `operation_type`)
 INSERT INTO `sys_role` (`id`, `name`, `remark`, `update_time`, `operation_type`) VALUES ('1', '业务管理员', '业务管理员', NOW(), '1');
 
 INSERT INTO `sys_user_role` (`user_id`, `role_id`, `id`) VALUES ('1', '9c69ab75b21640c089d0049dc61b98ed', 'a4dc19e9-b457-41a2-8c1a-55fa3307ff0e');
+
 
 -- ----------------------------
 -- Table structure for tb_kube_conf_cont_dock
@@ -1102,6 +1110,7 @@ CREATE TABLE `tb_kube_perf_dock_network_interface` (
   `INSERT_TIME` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+
 -- ----------------------------
 -- View structure for sys_role_user_login_view
 -- ----------------------------
@@ -1197,4 +1206,3 @@ CREATE DEFINER=`ssduser`@`%` EVENT `job_del_rm_docker_coll` ON SCHEDULE EVERY 6 
 -- Event structure for job_del_tb_kube_perf
 -- ----------------------------
 CREATE DEFINER=`ssduser`@`%` EVENT `job_del_tb_kube_perf` ON SCHEDULE EVERY 8 HOUR STARTS '2016-06-06 15:00:49' ON COMPLETION PRESERVE ENABLE DO CALL DEL_TB_KUBE_PERF();
-
