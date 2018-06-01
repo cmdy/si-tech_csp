@@ -209,6 +209,7 @@ CREATE TABLE `rm_docker_cluster` (
   `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '名称',
   `url` varchar(255) COLLATE utf8_unicode_ci DEFAULT '' COMMENT '路径地址',
   `conn_repo` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '关联仓库',
+  `repo_id` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '关联仓库ID',
   `insert_time` date DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
