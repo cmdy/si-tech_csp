@@ -210,7 +210,7 @@ CREATE TABLE `rm_docker_cluster` (
   `url` varchar(255) COLLATE utf8_unicode_ci DEFAULT '' COMMENT '路径地址',
   `conn_repo` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '关联仓库',
   `repo_id` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '关联仓库ID',
-  `insert_time` date DEFAULT NULL COMMENT '创建时间',
+  `insert_time` datetime DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -237,9 +237,12 @@ CREATE TABLE `rm_docker_compose` (
   `name` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '名称',
   `type` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '类型，目前只有pod',
   `description_file` varchar(2000) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `remark` mediumtext COLLATE utf8_unicode_ci COMMENT '描述',
+  `type_name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '类型说明',
   `update_time` datetime DEFAULT NULL,
   `user_id` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '用户id',
   `project_id` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '租户id',
+  `image_src` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '图片路径',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='container编排';
 
@@ -725,6 +728,7 @@ CREATE TABLE `rm_docker_repository` (
   `password` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '密码',
   `url` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '镜像库地址',
   `state` tinyint(1) DEFAULT '0' COMMENT '是否已关联集群，0：未关联，1：已关联',
+  `version_control` int(11) DEFAULT NULL COMMENT '版本数量限制',
   `insert_time` datetime DEFAULT NULL COMMENT '创建时间',
   `remark` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '描述',
   PRIMARY KEY (`id`)
@@ -858,6 +862,20 @@ CREATE TABLE `rm_docker_statefulset` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='statefulset,对应kubernetes中的statefulset(petset)';
 
 -- ----------------------------
+-- Table structure for rm_docker_store
+-- ----------------------------
+DROP TABLE IF EXISTS `rm_docker_store`;
+CREATE TABLE `rm_docker_store` (
+  `id` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'UUID，主键',
+  `name` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '名称',
+  `type` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '类型，deploy:集合/部署，server:服务器，database:数据库，env:开发环境',
+  `description_file` varchar(2000) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `remark` longtext COLLATE utf8_unicode_ci COMMENT '描述',
+  `insert_time` datetime DEFAULT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='store 应用商店';
+
+-- ----------------------------
 -- Table structure for rm_docker_thirdpartyresources
 -- ----------------------------
 DROP TABLE IF EXISTS `rm_docker_thirdpartyresources`;
@@ -870,6 +888,22 @@ CREATE TABLE `rm_docker_thirdpartyresources` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='thirdpartyresources';
 
+-- ----------------------------
+-- Table structure for rm_docker_vmhost_info
+-- ----------------------------
+DROP TABLE IF EXISTS `rm_docker_vmhost_info`;
+CREATE TABLE `rm_docker_vmhost_info` (
+  `id` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
+  `vh_ip` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `vh_cpu` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `vh_type` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `vh_mem` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `vh_storage` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `vh_system` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `vh_cpu_useage` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `vh_mem_usage` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
 -- Table structure for rm_docker_volumemount
@@ -922,7 +956,136 @@ CREATE TABLE `rm_local_remote_resource` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+-- ----------------------------
+-- Table structure for rm_process
+-- ----------------------------
+DROP TABLE IF EXISTS `rm_process`;
+CREATE TABLE `rm_process` (
+  `ID` varchar(200) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT '主键id',
+  `START_SCRIPT` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `STOP_SCRIPT` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `PROCESS` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `ISRUNNING` bigint(22) DEFAULT '0' COMMENT '是否运行 0 未启动 1 运行中2部分启动',
+  `OPERATION` bigint(22) DEFAULT '2' COMMENT ' 操作 0 停止 1 启动  默认值2不做操作',
+  `TAST_TYPE` bigint(22) DEFAULT '2' COMMENT '处理状态 0 待处理 1 处理中 2 已处理',
+  `PROCESS_STATE` bigint(22) DEFAULT '0' COMMENT '程当前状态,0无状态，1意外停止，2良好，3启动异常，4停止异常，5，意外启动,6个数不符,7服务器当机 默认值为0',
+  `PROCESS_LEVEL` bigint(22) DEFAULT '0' COMMENT '0级为主控进程，1级为子进程，依次递增,默认为0',
+  `USER_ID` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `ADD_TIME` datetime DEFAULT NULL,
+  `UPDATE_TIME` datetime DEFAULT NULL,
+  `START_TIME` datetime DEFAULT NULL,
+  `STOP_TIME` datetime DEFAULT NULL,
+  `PROCESS_DESC` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `ADD_USER` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `UPDATE_USER` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `TYPE` bigint(22) DEFAULT '0' COMMENT '0通用，1部署管理1',
+  `PROCESS_KEY` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `PARENT_ID` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `PROCESS_COUNT` bigint(22) DEFAULT '1' COMMENT '进程个数',
+  `PROCESS_COUNT_ACTUAL` bigint(22) DEFAULT NULL COMMENT '实际运行的进程个数，-1的时候变为检测中',
+  `IS_CHECK` int(2) DEFAULT '0',
+  `PID` varchar(256) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '运行进程的pid，多个进程使用";"分割',
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='主键id\r\n';
 
+-- ----------------------------
+-- Table structure for rm_script_manage
+-- ----------------------------
+DROP TABLE IF EXISTS `rm_script_manage`;
+CREATE TABLE `rm_script_manage` (
+  `id` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
+  `user_id` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `type` varchar(2) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `count` int(11) DEFAULT NULL,
+  `first_time` datetime DEFAULT NULL,
+  `last_time` datetime DEFAULT NULL,
+  `upload_person` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `update_person` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
+  `update_time` datetime DEFAULT NULL,
+  `path` varchar(512) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `grade` int(11) DEFAULT '0',
+  `interval` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `params` varchar(1000) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `app_type` varchar(2) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '1 boss云化脚本',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+
+-- ----------------------------
+-- Table structure for rm_tasks
+-- ----------------------------
+DROP TABLE IF EXISTS `rm_tasks`;
+CREATE TABLE `rm_tasks` (
+  `id` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT '任务编号',
+  `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '任务名称',
+  `type` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'CREATE_BANDWIDTH-创建公网带宽, \r\n            UPDATE_BANDWIDTH-变更公网带宽, \r\n            DELETE_BANDWIDTH-删除公网带宽, \r\n            CREATE_LOADBALANCE-新增负载均衡, \r\n            UPDATE_LOADBALANCE-变更负载均衡, \r\n            ENABLE_LOADBALANCE-启用负载均衡,\r\n            DISABLE_LOADBALANCE-禁用负载均衡,\r\n            DELETE_LOADBALANCE-删除负载均衡,\r\n            CREATE_PUBLICIP-新增公网IP, \r\n            DELETE_PUBLICIP-删除公网IP, \r\n            UNBIND_PUBLICIP-解除绑定公网IP,\r\n            ASSIGN_VIRTUALMACHINE-分配虚拟机, \r\n            CREATE_VIRTUALMACHINE-创建虚拟机, \r\n            UPDATE_VIRTUALMACHINE-变更虚拟机, \r\n            DELETE_VIRTUALMACHINE-删除虚拟机, \r\n            START_VIRTUALMACHINE-启动虚拟机, \r\n            STOP_VIRTUALMACHINE-停止虚拟机',
+  `status` int(11) NOT NULL COMMENT '0：任务创建；1：任务执行中；2：任务完成；3：任务未知状态',
+  `input` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '任务输入',
+  `output` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '任务输出',
+  `result` int(11) DEFAULT NULL COMMENT '0：成功；1：失败',
+  `in_remark` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '输入备注',
+  `out_remark` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '输出备注',
+  `create_time` datetime DEFAULT NULL COMMENT '任务创建时间',
+  `run_time` datetime DEFAULT NULL COMMENT '任务开始时间',
+  `finish_time` datetime DEFAULT NULL COMMENT '任务完成时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- ----------------------------
+-- Table structure for rm_user_manage
+-- ----------------------------
+DROP TABLE IF EXISTS `rm_user_manage`;
+CREATE TABLE `rm_user_manage` (
+  `ID` varchar(128) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
+  `IP` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `USERNAME` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `PASSWORD` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `MAC` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `INSERT_TIME` datetime DEFAULT NULL,
+  `UPDATE_TIME` datetime DEFAULT NULL,
+  `TYPE` varchar(2) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `PURPOSE` varchar(3) COLLATE utf8_unicode_ci DEFAULT '0' COMMENT '用户用途',
+  `PASSWORD_CHECK_STATUS` int(11) DEFAULT NULL COMMENT '密码核查状态1，密码正确；2，密码错误；',
+  `PASSWORD_CHECK_DATE` datetime DEFAULT NULL COMMENT '核查时间',
+  `PASSWORD_CHECK_DESC` varchar(256) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '核查结果描述',
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- ----------------------------
+-- Table structure for rm_virtual_machine
+-- ----------------------------
+DROP TABLE IF EXISTS `rm_virtual_machine`;
+CREATE TABLE `rm_virtual_machine` (
+  `id` varchar(64) NOT NULL COMMENT '编码',
+  `name` varchar(255) DEFAULT NULL COMMENT '名称',
+  `cpu` float DEFAULT NULL COMMENT 'cpu核数',
+  `memory` float DEFAULT NULL COMMENT '内存大小 单位G',
+  `disk` float DEFAULT '0' COMMENT '磁盘',
+  `status` char(2) DEFAULT NULL COMMENT '状态：1:已用、2:空闲',
+  `update_date` datetime DEFAULT NULL COMMENT '更新时间',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  `path` varchar(128) DEFAULT NULL COMMENT '路径',
+  `user_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '用户编号',
+  `start_script` varchar(500) DEFAULT NULL COMMENT '启动脚本',
+  `stop_script` varchar(500) DEFAULT NULL COMMENT '停止脚本',
+  `instance` int(255) DEFAULT '1',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='虚拟机';
+
+-- ----------------------------
+-- Table structure for sys_global_config
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_global_config`;
+CREATE TABLE `sys_global_config` (
+  `id` varchar(64) NOT NULL COMMENT '编号,UUID',
+  `config_key` varchar(255) DEFAULT NULL COMMENT '配置项标识',
+  `config_value` varchar(255) DEFAULT NULL COMMENT '配置项值',
+  `key_group` varchar(64) DEFAULT NULL COMMENT '配置项组标识,配置项分组',
+  `remark` varchar(255) DEFAULT NULL COMMENT '配置描述',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='系统全局配置数据表,配置可配置一个组，一个组包含多个key:value 也可只配置一个配置项';
 
 -- ----------------------------
 -- Table structure for sys_operation_log
@@ -1111,6 +1274,30 @@ CREATE TABLE `tb_kube_perf_dock_network_interface` (
   `INSERT_TIME` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+-- ----------------------------
+-- Table structure for tb_script_manage
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_script_manage`;
+CREATE TABLE `tb_script_manage` (
+  `id` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
+  `user_id` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `type` varchar(2) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `count` int(11) DEFAULT NULL,
+  `first_time` datetime DEFAULT NULL,
+  `last_time` datetime DEFAULT NULL,
+  `upload_person` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `update_person` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
+  `update_time` datetime DEFAULT NULL,
+  `path` varchar(512) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `grade` int(11) DEFAULT '0',
+  `interval` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `params` varchar(1000) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `app_type` varchar(2) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '1 boss云化脚本',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 
 -- ----------------------------
 -- View structure for sys_role_user_login_view
@@ -1176,7 +1363,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `v_rm
 -- View structure for v_rm_docker_relation_user_cluster
 -- ----------------------------
 DROP VIEW IF EXISTS `v_rm_docker_relation_user_cluster`;
-CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `v_rm_docker_relation_user_cluster` AS (select `a`.`user_id` AS `user_id`,`a`.`cluster_id` AS `cluster_id`,`b`.`name` AS `NAME`,`b`.`url` AS `URL` from (`rm_docker_relation_user_cluster` `a` left join `rm_docker_cluster` `b` on((`a`.`cluster_id` = `b`.`id`)))) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `v_rm_docker_relation_user_cluster` AS (select `a`.`user_id` AS `user_id`,`a`.`cluster_id` AS `cluster_id`,`b`.`name` AS `NAME`,`b`.`url` AS `URL`,`b`.`repo_id` AS `repo_id`,`b`.`conn_repo` AS `conn_repo` from (`rm_docker_relation_user_cluster` `a` left join `rm_docker_cluster` `b` on((`a`.`cluster_id` = `b`.`id`)))) ;
 
 -- ----------------------------
 -- View structure for v_rm_docker_service_port
@@ -1207,3 +1394,4 @@ CREATE DEFINER=`ssduser`@`%` EVENT `job_del_rm_docker_coll` ON SCHEDULE EVERY 6 
 -- Event structure for job_del_tb_kube_perf
 -- ----------------------------
 CREATE DEFINER=`ssduser`@`%` EVENT `job_del_tb_kube_perf` ON SCHEDULE EVERY 8 HOUR STARTS '2016-06-06 15:00:49' ON COMPLETION PRESERVE ENABLE DO CALL DEL_TB_KUBE_PERF();
+
