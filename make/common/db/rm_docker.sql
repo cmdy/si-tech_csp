@@ -36,6 +36,8 @@ CREATE TABLE `mm_alarm_strategy` (
   `end_time` datetime DEFAULT NULL COMMENT '策略结束时间',
   `alarm_form` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '报警形式，短信，邮件',
   `alarm_interval` int(11) DEFAULT NULL COMMENT '报警间隔,距上次告警间隔多长时间',
+  `scaling_type` int(11) DEFAULT NULL COMMENT '伸缩类型，1:增长，0：缩减',
+  `instance_num` int(11) DEFAULT NULL COMMENT '实例数量',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='告警策略表';
 
