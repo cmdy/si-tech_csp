@@ -3,6 +3,7 @@ set character set utf8;
 ALTER DATABASE `rm_docker` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 use rm_docker;
+
 -- ----------------------------
 -- Table structure for mm_alarm_rule
 -- ----------------------------
@@ -67,6 +68,7 @@ CREATE TABLE `omm_scaling` (
   `scaling_type` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '伸缩类型：自动 AUTO_SCALING ，定时 TIMING_SCALING',
   `max_replicas` int(11) DEFAULT NULL COMMENT '最大实例个数',
   `min_replicas` int(11) DEFAULT NULL COMMENT '最小实例个数',
+  `cluster` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '集群ID',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='自动伸缩与定时伸缩';
 
@@ -132,7 +134,7 @@ CREATE TABLE `rm_docker_alarm` (
   `namespace` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '资源的namespace',
   `strategy_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `mobiles` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '告警接收人手机号，多人用，隔开',
-  `emails` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '告警接收人手机号，多人用，隔开',
+  `emails` varchar(255) COLLATE utf8_unicode_ci DEFAULT '' COMMENT '告警接收人手机号，多人用，隔开',
   `mobile_status` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '短信告警状态，0未发送，1发送中，2发送成功，3发送失败，9发送异常(多次发送失败)',
   `email_status` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '邮件状态，0未发送，1发送中，2发送成功，3发送失败，9发送异常(多次发送失败)',
   PRIMARY KEY (`id`)
@@ -1076,18 +1078,6 @@ CREATE TABLE `rm_virtual_machine` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='虚拟机';
 
--- ----------------------------
--- Table structure for sys_global_config
--- ----------------------------
-DROP TABLE IF EXISTS `sys_global_config`;
-CREATE TABLE `sys_global_config` (
-  `id` varchar(64) NOT NULL COMMENT '编号,UUID',
-  `config_key` varchar(255) DEFAULT NULL COMMENT '配置项标识',
-  `config_value` varchar(255) DEFAULT NULL COMMENT '配置项值',
-  `key_group` varchar(64) DEFAULT NULL COMMENT '配置项组标识,配置项分组',
-  `remark` varchar(255) DEFAULT NULL COMMENT '配置描述',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='系统全局配置数据表,配置可配置一个组，一个组包含多个key:value 也可只配置一个配置项';
 
 -- ----------------------------
 -- Table structure for sys_operation_log
@@ -1111,12 +1101,50 @@ CREATE TABLE `sys_operation_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='操作日志';
 
 -- ----------------------------
+-- Table structure for sys_permissions
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_permissions`;
+CREATE TABLE `sys_permissions` (
+  `id` varchar(64) CHARACTER SET utf8 NOT NULL COMMENT 'uuid',
+  `role_id` varchar(64) CHARACTER SET utf8 DEFAULT NULL COMMENT '角色id',
+  `actions` varchar(2048) CHARACTER SET utf8 DEFAULT NULL COMMENT '操作权限',
+  `resources` varchar(2048) CHARACTER SET utf8 DEFAULT NULL COMMENT '资源权限',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- ----------------------------
+-- Table structure for sys_resource_schema
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_resource_schema`;
+CREATE TABLE `sys_resource_schema` (
+  `id` varchar(64) CHARACTER SET utf8 NOT NULL COMMENT 'uuid',
+  `resource` varchar(255) CHARACTER SET utf8 DEFAULT NULL COMMENT '资源',
+  `func_code` varchar(255) CHARACTER SET utf8 DEFAULT NULL COMMENT '功能模块编号',
+  `func_name` varchar(255) CHARACTER SET utf8 DEFAULT NULL COMMENT '功能模块名称',
+  `creation_timestamp` datetime DEFAULT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- ----------------------------
+-- Table structure for sys_resource_schema_action
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_resource_schema_action`;
+CREATE TABLE `sys_resource_schema_action` (
+  `id` varchar(64) CHARACTER SET utf8 NOT NULL COMMENT 'uuid',
+  `resource` varchar(255) CHARACTER SET utf8 DEFAULT NULL COMMENT '资源',
+  `action` varchar(255) CHARACTER SET utf8 DEFAULT NULL COMMENT '操作',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- ----------------------------
 -- Table structure for sys_role
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_role`;
 CREATE TABLE `sys_role` (
   `id` varchar(64) NOT NULL COMMENT '角色编号',
   `name` varchar(64) NOT NULL COMMENT '名称',
+  `namespace` varchar(255) DEFAULT NULL COMMENT '命名空间',
+  `cluster` varchar(255) DEFAULT NULL COMMENT '集群',
   `remark` varchar(255) DEFAULT NULL,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `operation_type` varchar(10) DEFAULT NULL COMMENT '操作类型：1 只读类型 2 运维操作',
@@ -1179,7 +1207,6 @@ INSERT INTO `sys_role` (`id`, `name`, `remark`, `update_time`, `operation_type`)
 INSERT INTO `sys_role` (`id`, `name`, `remark`, `update_time`, `operation_type`) VALUES ('1', '业务管理员', '业务管理员', NOW(), '1');
 
 INSERT INTO `sys_user_role` (`user_id`, `role_id`, `id`) VALUES ('1', '9c69ab75b21640c089d0049dc61b98ed', 'a4dc19e9-b457-41a2-8c1a-55fa3307ff0e');
-
 
 -- ----------------------------
 -- Table structure for tb_kube_conf_cont_dock
@@ -1305,7 +1332,7 @@ CREATE TABLE `tb_script_manage` (
 -- View structure for sys_role_user_login_view
 -- ----------------------------
 DROP VIEW IF EXISTS `sys_role_user_login_view`;
-CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `sys_role_user_login_view` AS select `b`.`id` AS `user_id`,`b`.`account` AS `login_name`,`b`.`name` AS `display_name`,`b`.`password` AS `password`,`b`.`status` AS `status`,`b`.`mobile` AS `mobile`,`b`.`email` AS `email`,`b`.`employee_id` AS `employee_id`,`b`.`parent_id` AS `parent_id`,`b`.`enable` AS `enable`,`a`.`name` AS `role_name`,`a`.`remark` AS `role_remark`,`a`.`operation_type` AS `role_operation_type`,`a`.`update_time` AS `role_update_time`,`c`.`role_id` AS `role_id` from ((`sys_user` `b` left join `sys_user_role` `c` on((`b`.`id` = `c`.`user_id`))) left join `sys_role` `a` on((`a`.`id` = `c`.`role_id`))) order by `b`.`id` desc ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`ssduser`@`%` SQL SECURITY DEFINER VIEW `sys_role_user_login_view` AS select `b`.`id` AS `user_id`,`b`.`account` AS `login_name`,`b`.`name` AS `display_name`,`b`.`password` AS `password`,`b`.`status` AS `status`,`b`.`mobile` AS `mobile`,`b`.`email` AS `email`,`b`.`employee_id` AS `employee_id`,`b`.`parent_id` AS `parent_id`,`b`.`enable` AS `enable`,`a`.`name` AS `role_name`,`a`.`remark` AS `role_remark`,`a`.`operation_type` AS `role_operation_type`,`a`.`update_time` AS `role_update_time`,`a`.`cluster` AS `role_cluster`,`a`.`namespace` AS `role_namespace`,`c`.`role_id` AS `role_id` from ((`sys_user` `b` left join `sys_user_role` `c` on((`b`.`id` = `c`.`user_id`))) left join `sys_role` `a` on((`a`.`id` = `c`.`role_id`))) order by `b`.`id` desc ;
 
 -- ----------------------------
 -- View structure for v_mm_alarm_strategy_rule_info
