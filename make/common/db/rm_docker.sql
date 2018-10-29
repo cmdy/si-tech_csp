@@ -843,6 +843,7 @@ CREATE TABLE `rm_docker_source_build_config` (
   `project_type` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '项目类型',
   `auto_build_infos` varchar(10240) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '自动部署列表信息（包含集群，应用，和匹配规则）',
   `source_config_deploy_info` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '自动创建应用的相关信息（包括镜像名称、应用名称、集群，业务）',
+  `env` varchar(1280) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '环境变量',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='持续集成配置表';
 
@@ -891,23 +892,6 @@ CREATE TABLE `rm_docker_thirdpartyresources` (
   `cluster` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '所属集群',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='thirdpartyresources';
-
--- ----------------------------
--- Table structure for rm_docker_vmhost_info
--- ----------------------------
-DROP TABLE IF EXISTS `rm_docker_vmhost_info`;
-CREATE TABLE `rm_docker_vmhost_info` (
-  `id` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
-  `vh_ip` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `vh_cpu` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `vh_type` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `vh_mem` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `vh_storage` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `vh_system` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `vh_cpu_useage` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `vh_mem_usage` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
 -- Table structure for rm_docker_volumemount
@@ -959,124 +943,6 @@ CREATE TABLE `rm_local_remote_resource` (
   `resource_type_id` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '资源类型编号',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
--- ----------------------------
--- Table structure for rm_process
--- ----------------------------
-DROP TABLE IF EXISTS `rm_process`;
-CREATE TABLE `rm_process` (
-  `ID` varchar(200) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT '主键id',
-  `START_SCRIPT` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `STOP_SCRIPT` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `PROCESS` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `ISRUNNING` bigint(22) DEFAULT '0' COMMENT '是否运行 0 未启动 1 运行中2部分启动',
-  `OPERATION` bigint(22) DEFAULT '2' COMMENT ' 操作 0 停止 1 启动  默认值2不做操作',
-  `TAST_TYPE` bigint(22) DEFAULT '2' COMMENT '处理状态 0 待处理 1 处理中 2 已处理',
-  `PROCESS_STATE` bigint(22) DEFAULT '0' COMMENT '程当前状态,0无状态，1意外停止，2良好，3启动异常，4停止异常，5，意外启动,6个数不符,7服务器当机 默认值为0',
-  `PROCESS_LEVEL` bigint(22) DEFAULT '0' COMMENT '0级为主控进程，1级为子进程，依次递增,默认为0',
-  `USER_ID` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `ADD_TIME` datetime DEFAULT NULL,
-  `UPDATE_TIME` datetime DEFAULT NULL,
-  `START_TIME` datetime DEFAULT NULL,
-  `STOP_TIME` datetime DEFAULT NULL,
-  `PROCESS_DESC` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `ADD_USER` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `UPDATE_USER` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `TYPE` bigint(22) DEFAULT '0' COMMENT '0通用，1部署管理1',
-  `PROCESS_KEY` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `PARENT_ID` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `PROCESS_COUNT` bigint(22) DEFAULT '1' COMMENT '进程个数',
-  `PROCESS_COUNT_ACTUAL` bigint(22) DEFAULT NULL COMMENT '实际运行的进程个数，-1的时候变为检测中',
-  `IS_CHECK` int(2) DEFAULT '0',
-  `PID` varchar(256) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '运行进程的pid，多个进程使用";"分割',
-  PRIMARY KEY (`ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='主键id\r\n';
-
--- ----------------------------
--- Table structure for rm_script_manage
--- ----------------------------
-DROP TABLE IF EXISTS `rm_script_manage`;
-CREATE TABLE `rm_script_manage` (
-  `id` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
-  `user_id` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `type` varchar(2) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `description` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `count` int(11) DEFAULT NULL,
-  `first_time` datetime DEFAULT NULL,
-  `last_time` datetime DEFAULT NULL,
-  `upload_person` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `update_person` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `create_time` datetime DEFAULT NULL,
-  `update_time` datetime DEFAULT NULL,
-  `path` varchar(512) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `grade` int(11) DEFAULT '0',
-  `interval` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `params` varchar(1000) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `app_type` varchar(2) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '1 boss云化脚本',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
-
--- ----------------------------
--- Table structure for rm_tasks
--- ----------------------------
-DROP TABLE IF EXISTS `rm_tasks`;
-CREATE TABLE `rm_tasks` (
-  `id` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT '任务编号',
-  `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '任务名称',
-  `type` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'CREATE_BANDWIDTH-创建公网带宽, \r\n            UPDATE_BANDWIDTH-变更公网带宽, \r\n            DELETE_BANDWIDTH-删除公网带宽, \r\n            CREATE_LOADBALANCE-新增负载均衡, \r\n            UPDATE_LOADBALANCE-变更负载均衡, \r\n            ENABLE_LOADBALANCE-启用负载均衡,\r\n            DISABLE_LOADBALANCE-禁用负载均衡,\r\n            DELETE_LOADBALANCE-删除负载均衡,\r\n            CREATE_PUBLICIP-新增公网IP, \r\n            DELETE_PUBLICIP-删除公网IP, \r\n            UNBIND_PUBLICIP-解除绑定公网IP,\r\n            ASSIGN_VIRTUALMACHINE-分配虚拟机, \r\n            CREATE_VIRTUALMACHINE-创建虚拟机, \r\n            UPDATE_VIRTUALMACHINE-变更虚拟机, \r\n            DELETE_VIRTUALMACHINE-删除虚拟机, \r\n            START_VIRTUALMACHINE-启动虚拟机, \r\n            STOP_VIRTUALMACHINE-停止虚拟机',
-  `status` int(11) NOT NULL COMMENT '0：任务创建；1：任务执行中；2：任务完成；3：任务未知状态',
-  `input` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '任务输入',
-  `output` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '任务输出',
-  `result` int(11) DEFAULT NULL COMMENT '0：成功；1：失败',
-  `in_remark` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '输入备注',
-  `out_remark` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '输出备注',
-  `create_time` datetime DEFAULT NULL COMMENT '任务创建时间',
-  `run_time` datetime DEFAULT NULL COMMENT '任务开始时间',
-  `finish_time` datetime DEFAULT NULL COMMENT '任务完成时间',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
--- ----------------------------
--- Table structure for rm_user_manage
--- ----------------------------
-DROP TABLE IF EXISTS `rm_user_manage`;
-CREATE TABLE `rm_user_manage` (
-  `ID` varchar(128) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `IP` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `USERNAME` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `PASSWORD` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `MAC` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `INSERT_TIME` datetime DEFAULT NULL,
-  `UPDATE_TIME` datetime DEFAULT NULL,
-  `TYPE` varchar(2) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `PURPOSE` varchar(3) COLLATE utf8_unicode_ci DEFAULT '0' COMMENT '用户用途',
-  `PASSWORD_CHECK_STATUS` int(11) DEFAULT NULL COMMENT '密码核查状态1，密码正确；2，密码错误；',
-  `PASSWORD_CHECK_DATE` datetime DEFAULT NULL COMMENT '核查时间',
-  `PASSWORD_CHECK_DESC` varchar(256) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '核查结果描述',
-  PRIMARY KEY (`ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
--- ----------------------------
--- Table structure for rm_virtual_machine
--- ----------------------------
-DROP TABLE IF EXISTS `rm_virtual_machine`;
-CREATE TABLE `rm_virtual_machine` (
-  `id` varchar(64) NOT NULL COMMENT '编码',
-  `name` varchar(255) DEFAULT NULL COMMENT '名称',
-  `cpu` float DEFAULT NULL COMMENT 'cpu核数',
-  `memory` float DEFAULT NULL COMMENT '内存大小 单位G',
-  `disk` float DEFAULT '0' COMMENT '磁盘',
-  `status` char(2) DEFAULT NULL COMMENT '状态：1:已用、2:空闲',
-  `update_date` datetime DEFAULT NULL COMMENT '更新时间',
-  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
-  `path` varchar(128) DEFAULT NULL COMMENT '路径',
-  `user_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '用户编号',
-  `start_script` varchar(500) DEFAULT NULL COMMENT '启动脚本',
-  `stop_script` varchar(500) DEFAULT NULL COMMENT '停止脚本',
-  `instance` int(255) DEFAULT '1',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='虚拟机';
 
 
 -- ----------------------------
@@ -1195,18 +1061,6 @@ CREATE TABLE `sys_user_role` (
   `id` varchar(64) NOT NULL COMMENT '编号',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户与角色关系表';
-
--- ----------------------------
---  sys_user init data
--- ----------------------------
-set character set utf8;
-INSERT INTO `sys_user` (`id`, `account`, `password`, `name`, `employee_id`, `mobile`, `email`, `status`, `update_time`, `parent_id`, `enable`, `type`) VALUES ('1', 'admin', 'hAGpZendyyNHMbYhLvB93EIURcSrCNJ8GhjnBBuO1cf8uoaxshwabhgLLOD7ADyiSyeXLWeSUY+8so+gf0hTyyYxpjYGw3rJzl83AqTAkrCE1LdrcmeYfbxI7SD4oV/1Y4QqIm97s2D93sfNnJNTWc6Oww995/CYaYk5nacr/bM=', '云服务中心管理员', '2410b4cafe424f79a0e54f5f367d6b69', '18902384092', 'test111@test.com', '1', NOW(), '', '', '');
-
-INSERT INTO `sys_role` (`id`, `name`, `remark`, `update_time`, `operation_type`) VALUES ('9c69ab75b21640c089d0049dc61b98ed', '系统管理员', '系统管理员', NOW(), '2');
-
-INSERT INTO `sys_role` (`id`, `name`, `remark`, `update_time`, `operation_type`) VALUES ('1', '业务管理员', '业务管理员', NOW(), '1');
-
-INSERT INTO `sys_user_role` (`user_id`, `role_id`, `id`) VALUES ('1', '9c69ab75b21640c089d0049dc61b98ed', 'a4dc19e9-b457-41a2-8c1a-55fa3307ff0e');
 
 -- ----------------------------
 -- Table structure for tb_kube_conf_cont_dock
@@ -1424,3 +1278,102 @@ CREATE DEFINER=`ssduser`@`%` EVENT `job_del_rm_docker_coll` ON SCHEDULE EVERY 6 
 -- ----------------------------
 CREATE DEFINER=`ssduser`@`%` EVENT `job_del_tb_kube_perf` ON SCHEDULE EVERY 8 HOUR STARTS '2016-06-06 15:00:49' ON COMPLETION PRESERVE ENABLE DO CALL DEL_TB_KUBE_PERF();
 
+
+-- ----------------------------
+-- sys_resource_schema
+-- ----------------------------
+INSERT INTO `sys_resource_schema` VALUES('1','deployment','deployment','应用',now());
+INSERT INTO `sys_resource_schema_action` VALUES('1','deployment','deployment:view');
+INSERT INTO `sys_resource_schema_action` VALUES('2','deployment','deployment:create');
+INSERT INTO `sys_resource_schema_action` VALUES('3','deployment','deployment:update');
+INSERT INTO `sys_resource_schema_action` VALUES('4','deployment','deployment:delete');
+INSERT INTO `sys_resource_schema` VALUES('2','service','service','服务',now());
+INSERT INTO `sys_resource_schema_action` VALUES('5','service','service:view');
+INSERT INTO `sys_resource_schema_action` VALUES('6','service','service:create');
+INSERT INTO `sys_resource_schema_action` VALUES('7','service','service:update');
+INSERT INTO `sys_resource_schema_action` VALUES('8','service','service:delete');
+INSERT INTO `sys_resource_schema` VALUES('3','networkpolicy','networkpolicy','网络策略',now());
+INSERT INTO `sys_resource_schema_action` VALUES('9','networkpolicy','networkpolicy:view');
+INSERT INTO `sys_resource_schema_action` VALUES('10','networkpolicy','networkpolicy:create');
+INSERT INTO `sys_resource_schema_action` VALUES('11','networkpolicy','networkpolicy:delete');
+INSERT INTO `sys_resource_schema` VALUES('4','alarms','alarms','告警策略',now());
+INSERT INTO `sys_resource_schema_action` VALUES('12','alarms','alarms:view');
+INSERT INTO `sys_resource_schema_action` VALUES('13','alarms','alarms:create');
+INSERT INTO `sys_resource_schema_action` VALUES('14','alarms','alarms:update');
+INSERT INTO `sys_resource_schema_action` VALUES('15','alarms','alarms:delete');
+INSERT INTO `sys_resource_schema` VALUES('5','calico','calico','IP池(CIDR)',now());
+INSERT INTO `sys_resource_schema_action` VALUES('16','calico','calico:view');
+INSERT INTO `sys_resource_schema_action` VALUES('17','calico','calico:create');
+INSERT INTO `sys_resource_schema_action` VALUES('18','calico','calico:update');
+INSERT INTO `sys_resource_schema_action` VALUES('19','calico','calico:delete');
+INSERT INTO `sys_resource_schema` VALUES('6','ceph','ceph','持久卷管理',now());
+INSERT INTO `sys_resource_schema_action` VALUES('20','ceph','ceph:view');
+INSERT INTO `sys_resource_schema_action` VALUES('21','ceph','ceph:create');
+INSERT INTO `sys_resource_schema_action` VALUES('22','ceph','ceph:update');
+INSERT INTO `sys_resource_schema_action` VALUES('23','ceph','ceph:delete');
+INSERT INTO `sys_resource_schema` VALUES('7','compose','compose','编排列表',now());
+INSERT INTO `sys_resource_schema_action` VALUES('24','compose','compose:view');
+INSERT INTO `sys_resource_schema_action` VALUES('25','compose','compose:create');
+INSERT INTO `sys_resource_schema_action` VALUES('26','compose','compose:update');
+INSERT INTO `sys_resource_schema_action` VALUES('27','compose','compose:delete');
+INSERT INTO `sys_resource_schema` VALUES('8','configmap','configmap','配置管理',now());
+INSERT INTO `sys_resource_schema_action` VALUES('28','configmap','configmap:view');
+INSERT INTO `sys_resource_schema_action` VALUES('29','configmap','configmap:create');
+INSERT INTO `sys_resource_schema_action` VALUES('30','configmap','configmap:update');
+INSERT INTO `sys_resource_schema_action` VALUES('31','configmap','configmap:delete');
+INSERT INTO `sys_resource_schema` VALUES('9','store','store','应用商店',now());
+INSERT INTO `sys_resource_schema_action` VALUES('32','store','store:view');
+INSERT INTO `sys_resource_schema` VALUES('10','ingresscontroller','ingresscontroller','负载管理',now());
+INSERT INTO `sys_resource_schema_action` VALUES('33','ingresscontroller','ingresscontroller:view');
+INSERT INTO `sys_resource_schema_action` VALUES('34','ingresscontroller','ingresscontroller:create');
+INSERT INTO `sys_resource_schema_action` VALUES('35','ingresscontroller','ingresscontroller:update');
+INSERT INTO `sys_resource_schema_action` VALUES('36','ingresscontroller','ingresscontroller:delete');
+INSERT INTO `sys_resource_schema` VALUES('11','snapshot','snapshot','快照管理',now());
+INSERT INTO `sys_resource_schema_action` VALUES('37','snapshot','snapshot:view');
+INSERT INTO `sys_resource_schema_action` VALUES('38','snapshot','snapshot:create');
+INSERT INTO `sys_resource_schema_action` VALUES('39','snapshot','snapshot:update');
+INSERT INTO `sys_resource_schema_action` VALUES('40','snapshot','snapshot:delete');
+INSERT INTO `sys_resource_schema` VALUES('12','sourcebuildconfig','sourcebuildconfig','项目构建',now());
+INSERT INTO `sys_resource_schema_action` VALUES('41','sourcebuildconfig','sourcebuildconfig:view');
+INSERT INTO `sys_resource_schema_action` VALUES('42','sourcebuildconfig','sourcebuildconfig:create');
+INSERT INTO `sys_resource_schema_action` VALUES('43','sourcebuildconfig','sourcebuildconfig:update');
+INSERT INTO `sys_resource_schema_action` VALUES('44','sourcebuildconfig','sourcebuildconfig:delete');
+INSERT INTO `sys_resource_schema` VALUES('13','scaling','scaling','弹性伸缩',now());
+INSERT INTO `sys_resource_schema_action` VALUES('45','scaling','scaling:view');
+INSERT INTO `sys_resource_schema_action` VALUES('46','scaling','scaling:create');
+INSERT INTO `sys_resource_schema_action` VALUES('47','scaling','scaling:update');
+INSERT INTO `sys_resource_schema_action` VALUES('48','scaling','scaling:delete');
+INSERT INTO `sys_resource_schema` VALUES('14','log','log','日志管理',now());
+INSERT INTO `sys_resource_schema_action` VALUES('49','log','log:view');
+INSERT INTO `sys_resource_schema` VALUES('15','nodegroup','nodegroup','主机组',now());
+INSERT INTO `sys_resource_schema_action` VALUES('50','nodegroup','nodegroup:view');
+INSERT INTO `sys_resource_schema_action` VALUES('51','nodegroup','nodegroup:create');
+INSERT INTO `sys_resource_schema_action` VALUES('52','nodegroup','nodegroup:update');
+INSERT INTO `sys_resource_schema_action` VALUES('53','nodegroup','nodegroup:delete');
+INSERT INTO `sys_resource_schema` VALUES('16','monitor','monitor','监控面板',now());
+INSERT INTO `sys_resource_schema_action` VALUES('54','monitor','monitor:view');
+
+
+
+-- ----------------------------
+-- sys_permissions
+-- ----------------------------
+INSERT INTO `sys_permissions` (`id`, `role_id`, `actions`, `resources`) VALUES ('1', NULL, '[\"deployment:view\",\"deployment:create\",\"deployment:update\",\"deployment:delete\",\"ingresscontroller:view\",\"ingresscontroller:create\",\"ingresscontroller:update\",\"ingresscontroller:delete\",\"snapshot:view\",\"snapshot:create\",\"snapshot:update\",\"snapshot:delete\",\"sourcebuildconfig:view\",\"sourcebuildconfig:create\",\"sourcebuildconfig:update\",\"sourcebuildconfig:delete\",\"scaling:view\",\"scaling:create\",\"scaling:update\",\"scaling:delete\",\"log:view\",\"nodegroup:view\",\"nodegroup:create\",\"nodegroup:update\",\"nodegroup:delete\",\"service:view\",\"service:create\",\"service:update\",\"service:delete\",\"alarms:view\",\"alarms:create\",\"alarms:update\",\"alarms:delete\",\"ceph:view\",\"ceph:create\",\"ceph:update\",\"ceph:delete\",\"compose:view\",\"compose:create\",\"compose:update\",\"compose:delete\",\"configmap:view\",\"configmap:create\",\"configmap:update\",\"configmap:delete\"]', '[\"deployment\",\"ingresscontroller\",\"snapshot\",\"sourcebuildconfig\",\"scaling\",\"log\",\"nodegroup\",\"service\",\"alarms\",\"ceph\",\"compose\",\"configmap\"]');
+
+-- ----------------------------
+-- sys_user
+-- ----------------------------
+INSERT INTO `sys_user` (`id`, `account`, `password`, `name`, `employee_id`, `mobile`, `email`, `status`, `update_time`, `parent_id`, `enable`, `type`) VALUES ('1', 'admin', 'hAGpZendyyNHMbYhLvB93EIURcSrCNJ8GhjnBBuO1cf8uoaxshwabhgLLOD7ADyiSyeXLWeSUY+8so+gf0hTyyYxpjYGw3rJzl83AqTAkrCE1LdrcmeYfbxI7SD4oV/1Y4QqIm97s2D93sfNnJNTWc6Oww995/CYaYk5nacr/bM=', '云服务中心管理员', '2410b4cafe424f79a0e54f5f367d6b69', '18902384092', 'test111@test.com', '1', NOW(), '', '', '');
+
+
+-- ----------------------------
+-- sys_role
+-- ----------------------------
+INSERT INTO `sys_role` (`id`, `name`, `remark`, `update_time`, `operation_type`) VALUES ('9c69ab75b21640c089d0049dc61b98ed', '系统管理员', '系统管理员', NOW(), '2');
+INSERT INTO `sys_role` (`id`, `name`, `remark`, `update_time`, `operation_type`) VALUES ('1', '业务管理员', '业务管理员', NOW(), '1');
+
+
+-- ----------------------------
+-- sys_user_role
+-- ----------------------------
+INSERT INTO `sys_user_role` (`user_id`, `role_id`, `id`) VALUES ('1', '9c69ab75b21640c089d0049dc61b98ed', 'a4dc19e9-b457-41a2-8c1a-55fa3307ff0e');
